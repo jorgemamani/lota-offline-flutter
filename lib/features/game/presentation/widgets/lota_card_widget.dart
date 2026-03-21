@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../../../shared/constants/lota_card_colors.dart';
 import '../../domain/models/lota_card_model.dart';
 
 /// Renderiza un cartón completo de Lota Argentina (3 sub-cartones).
@@ -19,6 +20,7 @@ class LotaCardWidget extends StatelessWidget {
     this.drawnNumbers = const {},
     this.onCellTap,
     this.compact = false,
+    this.accentColor,
   });
 
   final LotaCardModel model;
@@ -32,9 +34,17 @@ class LotaCardWidget extends StatelessWidget {
   /// Modo compacto: celdas más pequeñas, sin callback.
   final bool compact;
 
+  /// Color de acento del cartón. Si es null usa el primary del tema.
+  final LotaCardColor? accentColor;
+
   @override
   Widget build(BuildContext context) {
-    final colors = Theme.of(context).colorScheme;
+    final themeColors = Theme.of(context).colorScheme;
+    final cardColor = accentColor ??
+        LotaCardColor(
+          primary: themeColors.primary,
+          onPrimary: themeColors.onPrimary,
+        );
 
     return Column(
       mainAxisSize: MainAxisSize.min,
@@ -44,7 +54,7 @@ class LotaCardWidget extends StatelessWidget {
             Divider(
               height: compact ? 10 : 14,
               thickness: 1.5,
-              color: colors.outlineVariant,
+              color: themeColors.outlineVariant,
             ),
           _SubCartonCard(
             model: model,
@@ -52,7 +62,8 @@ class LotaCardWidget extends StatelessWidget {
             drawnNumbers: drawnNumbers,
             onCellTap: onCellTap,
             compact: compact,
-            colors: colors,
+            themeColors: themeColors,
+            cardColor: cardColor,
           ),
         ],
       ],
@@ -68,7 +79,8 @@ class _SubCartonCard extends StatelessWidget {
     required this.drawnNumbers,
     required this.onCellTap,
     required this.compact,
-    required this.colors,
+    required this.themeColors,
+    required this.cardColor,
   });
 
   final LotaCardModel model;
@@ -76,7 +88,8 @@ class _SubCartonCard extends StatelessWidget {
   final Set<int> drawnNumbers;
   final void Function(int number)? onCellTap;
   final bool compact;
-  final ColorScheme colors;
+  final ColorScheme themeColors;
+  final LotaCardColor cardColor;
 
   @override
   Widget build(BuildContext context) {
@@ -84,18 +97,20 @@ class _SubCartonCard extends StatelessWidget {
 
     return Container(
       decoration: BoxDecoration(
-        color: colors.primary,
+        color: cardColor.primary,
         borderRadius: BorderRadius.circular(compact ? 6 : 10),
       ),
       padding: const EdgeInsets.all(2),
       child: Container(
         decoration: BoxDecoration(
-          border: Border.all(color: colors.onPrimary, width: compact ? 4 : 6),
+          color: Colors.white,
+          border:
+              Border.all(color: cardColor.onPrimary, width: compact ? 4 : 6),
           borderRadius: BorderRadius.circular(compact ? 4 : 8),
         ),
         child: Table(
           border: TableBorder.all(
-            color: colors.primary,
+            color: cardColor.primary,
             width: compact ? 1 : 1.5,
           ),
           children: [
@@ -110,7 +125,8 @@ class _SubCartonCard extends StatelessWidget {
                         isDrawn: model.card[row][col] != 0 &&
                             drawnNumbers.contains(model.card[row][col]),
                         compact: compact,
-                        colors: colors,
+                        themeColors: themeColors,
+                        cardColor: cardColor,
                         onTap: model.card[row][col] != 0 && onCellTap != null
                             ? () => onCellTap!(model.card[row][col])
                             : null,
@@ -131,7 +147,8 @@ class _Cell extends StatelessWidget {
     required this.isMarked,
     required this.isDrawn,
     required this.compact,
-    required this.colors,
+    required this.themeColors,
+    required this.cardColor,
     this.onTap,
   });
 
@@ -139,7 +156,8 @@ class _Cell extends StatelessWidget {
   final bool isMarked;
   final bool isDrawn;
   final bool compact;
-  final ColorScheme colors;
+  final ColorScheme themeColors;
+  final LotaCardColor cardColor;
   final VoidCallback? onTap;
 
   bool get isEmpty => value == 0;
@@ -147,23 +165,23 @@ class _Cell extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final cellHeight = compact ? 28.0 : 38.0;
-    final fontSize = compact ? 9.0 : 13.0;
+    final fontSize = compact ? 12.0 : 18.0;
 
     final Color bg;
     final Color fg;
 
     if (isEmpty) {
-      bg = colors.primaryContainer.withOpacity(0.35);
+      bg = cardColor.primary.withOpacity(0.70);
       fg = Colors.transparent;
     } else if (isMarked) {
-      bg = colors.primary;
-      fg = colors.onPrimary;
+      bg = cardColor.primary;
+      fg = cardColor.onPrimary;
     } else if (isDrawn) {
-      bg = colors.primaryContainer;
-      fg = colors.onPrimaryContainer;
+      bg = cardColor.primary.withOpacity(0.35);
+      fg = themeColors.onSurface;
     } else {
       bg = Colors.white;
-      fg = colors.onSurface;
+      fg = themeColors.onSurface;
     }
 
     return GestureDetector(
@@ -179,8 +197,7 @@ class _Cell extends StatelessWidget {
                   '$value',
                   style: TextStyle(
                     fontSize: fontSize,
-                    fontWeight:
-                        isMarked ? FontWeight.bold : FontWeight.w500,
+                    fontWeight: isMarked ? FontWeight.w900 : FontWeight.w600,
                     color: fg,
                     height: 1,
                   ),

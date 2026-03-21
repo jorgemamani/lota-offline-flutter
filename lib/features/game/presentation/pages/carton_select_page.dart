@@ -1,9 +1,12 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../dependency_injection.dart';
 import '../../../../routing/route_names.dart';
+import '../../../../shared/constants/lota_card_colors.dart';
 import '../../data/carton_manager.dart';
 import '../../domain/models/game_mode.dart';
 import '../../domain/models/lota_card_model.dart';
@@ -26,22 +29,61 @@ class CartonSelectPage extends StatefulWidget {
 }
 
 class _CartonSelectPageState extends State<CartonSelectPage> {
-  late final List<LotaCardModel> _available;
+  final List<LotaCardModel> _available = [];
+  final Map<String, LotaCardColor> _cardColors = {};
   final Set<String> _selectedIds = {};
+  late final ScrollController _scrollController;
+  final _random = Random();
+  bool _isLoadingMore = false;
 
-  static const _totalToGenerate = 6;
+  static const _pageSize = 10;
+  static const _maxCartones = 50;
+  static const _maxSelection = 3;
 
   @override
   void initState() {
     super.initState();
-    _available = sl<CartonManager>().generateCards(_totalToGenerate);
+    _scrollController = ScrollController()..addListener(_onScroll);
+    _loadMore();
+  }
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  void _onScroll() {
+    if (_scrollController.position.pixels >=
+        _scrollController.position.maxScrollExtent - 200) {
+      _loadMore();
+    }
+  }
+
+  void _loadMore() {
+    if (_isLoadingMore || _available.length >= _maxCartones) return;
+    final remaining = _maxCartones - _available.length;
+    final toLoad = remaining < _pageSize ? remaining : _pageSize;
+    setState(() {
+      _isLoadingMore = true;
+    });
+    final newCards = sl<CartonManager>().generateCards(toLoad);
+    final palette = LotaCardColors.all;
+    setState(() {
+      for (final card in newCards) {
+        _cardColors[card.id] =
+            palette[_random.nextInt(palette.length)];
+      }
+      _available.addAll(newCards);
+      _isLoadingMore = false;
+    });
   }
 
   void _toggleCarton(String id) {
     setState(() {
       if (_selectedIds.contains(id)) {
         _selectedIds.remove(id);
-      } else {
+      } else if (_selectedIds.length < _maxSelection) {
         _selectedIds.add(id);
       }
     });
@@ -64,6 +106,9 @@ class _CartonSelectPageState extends State<CartonSelectPage> {
       extra: GamePlayArgs(
         mode: widget.args.mode,
         cartones: selected,
+        cardColors: Map.fromEntries(
+          selected.map((c) => MapEntry(c.id, _cardColors[c.id]!)),
+        ),
       ),
     );
   }
@@ -88,7 +133,7 @@ class _CartonSelectPageState extends State<CartonSelectPage> {
                 const SizedBox(width: 8),
                 Expanded(
                   child: Text(
-                    'Seleccioná uno o más cartones para jugar.',
+                    'Seleccioná hasta $_maxSelection cartones para jugar.',
                     style: theme.textTheme.bodySmall?.copyWith(
                       color: theme.colorScheme.onSurfaceVariant,
                     ),
@@ -96,7 +141,8 @@ class _CartonSelectPageState extends State<CartonSelectPage> {
                 ),
                 if (_selectedIds.isNotEmpty)
                   Chip(
-                    label: Text('${_selectedIds.length} seleccionado(s)'),
+                    label: Text(
+                        '${_selectedIds.length}/$_maxSelection seleccionado(s)'),
                     visualDensity: VisualDensity.compact,
                   ),
               ],
@@ -104,30 +150,54 @@ class _CartonSelectPageState extends State<CartonSelectPage> {
           ),
           Expanded(
             child: ListView.separated(
+              controller: _scrollController,
               padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
-              itemCount: _available.length,
+              itemCount: _available.length + (_isLoadingMore ? 1 : 0),
               separatorBuilder: (_, __) => const SizedBox(height: 16),
               itemBuilder: (context, index) {
+                if (index == _available.length) {
+                  return const Padding(
+                    padding: EdgeInsets.symmetric(vertical: 24),
+                    child: Center(child: CircularProgressIndicator()),
+                  );
+                }
                 final carton = _available[index];
                 final isSelected = _selectedIds.contains(carton.id);
 
+                final cardColor = _cardColors[carton.id];
+                final accentColor =
+                    cardColor?.primary ?? theme.colorScheme.primary;
+
                 return GestureDetector(
-                  onTap: () => _toggleCarton(carton.id),
+                  onTap: () {
+                    if (!_selectedIds.contains(carton.id) &&
+                        _selectedIds.length >= _maxSelection) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text(
+                              'Máximo $_maxSelection cartones permitidos.'),
+                          behavior: SnackBarBehavior.floating,
+                          duration: const Duration(seconds: 2),
+                        ),
+                      );
+                      return;
+                    }
+                    _toggleCarton(carton.id);
+                  },
                   child: AnimatedContainer(
                     duration: const Duration(milliseconds: 180),
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(12),
                       border: Border.all(
                         color: isSelected
-                            ? theme.colorScheme.primary
+                            ? accentColor
                             : theme.colorScheme.outlineVariant,
                         width: isSelected ? 2.5 : 1,
                       ),
                       boxShadow: isSelected
                           ? [
                               BoxShadow(
-                                color: theme.colorScheme.primary
-                                    .withOpacity(0.18),
+                                color: accentColor.withOpacity(0.22),
                                 blurRadius: 10,
                                 spreadRadius: 1,
                               ),
@@ -165,6 +235,7 @@ class _CartonSelectPageState extends State<CartonSelectPage> {
                               LotaCardWidget(
                                 model: carton,
                                 compact: true,
+                                accentColor: _cardColors[carton.id],
                               ),
                             ],
                           ),
@@ -175,14 +246,14 @@ class _CartonSelectPageState extends State<CartonSelectPage> {
                             right: 10,
                             child: Container(
                               decoration: BoxDecoration(
-                                color: theme.colorScheme.primary,
+                                color: accentColor,
                                 shape: BoxShape.circle,
                               ),
                               padding: const EdgeInsets.all(3),
                               child: Icon(
                                 Icons.check_rounded,
                                 size: 14,
-                                color: theme.colorScheme.onPrimary,
+                                color: cardColor?.onPrimary ?? Colors.white,
                               ),
                             ),
                           ),

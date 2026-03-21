@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../routing/route_names.dart';
+import '../../../../shared/constants/lota_card_colors.dart';
 import '../../../../shared/widgets/loading_indicator.dart';
 import '../../../bolillero/presentation/widgets/bolillero_widget.dart';
 import '../../domain/models/game_mode.dart';
@@ -12,10 +13,17 @@ import '../bloc/game_bloc.dart';
 import '../widgets/lota_card_widget.dart';
 
 class GamePlayArgs {
-  const GamePlayArgs({required this.mode, required this.cartones});
+  const GamePlayArgs({
+    required this.mode,
+    required this.cartones,
+    this.cardColors = const {},
+  });
 
   final GameMode mode;
   final List<LotaCardModel> cartones;
+
+  /// Color de acento por ID de cartón — preserva los colores de la selección.
+  final Map<String, LotaCardColor> cardColors;
 }
 
 class GamePlayPage extends StatelessWidget {
@@ -106,7 +114,11 @@ class GamePlayPage extends StatelessWidget {
                 return _GameOverBody(state: state);
               }
               if (state is GameInProgress) {
-                return _GameBody(state: state, mode: args.mode);
+                return _GameBody(
+                  state: state,
+                  mode: args.mode,
+                  cardColors: args.cardColors,
+                );
               }
               return const SizedBox.shrink();
             },
@@ -204,10 +216,15 @@ class GamePlayPage extends StatelessWidget {
 // ── Vistas internas ────────────────────────────────────────────────────────────
 
 class _GameBody extends StatelessWidget {
-  const _GameBody({required this.state, required this.mode});
+  const _GameBody({
+    required this.state,
+    required this.mode,
+    required this.cardColors,
+  });
 
   final GameInProgress state;
   final GameMode mode;
+  final Map<String, LotaCardColor> cardColors;
 
   @override
   Widget build(BuildContext context) {
@@ -217,6 +234,9 @@ class _GameBody extends StatelessWidget {
       separatorBuilder: (_, __) => const SizedBox(height: 24),
       itemBuilder: (context, index) {
         final carton = state.cartones[index];
+        final cardColor = cardColors[carton.id];
+        final accentColor =
+            cardColor?.primary ?? Theme.of(context).colorScheme.primary;
 
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -230,7 +250,7 @@ class _GameBody extends StatelessWidget {
                     'Cartón ${index + 1}',
                     style: Theme.of(context).textTheme.titleSmall?.copyWith(
                           fontWeight: FontWeight.bold,
-                          color: Theme.of(context).colorScheme.primary,
+                          color: accentColor,
                         ),
                   ),
                   Text(
@@ -246,6 +266,7 @@ class _GameBody extends StatelessWidget {
             LotaCardWidget(
               model: carton,
               drawnNumbers: state.drawnSet,
+              accentColor: cardColor,
               onCellTap: (number) => context.read<GameBloc>().add(
                     NumberToggled(cartonId: carton.id, number: number),
                   ),
