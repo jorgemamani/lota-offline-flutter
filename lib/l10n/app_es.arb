@@ -1,0 +1,19 @@
+{
+  "@@locale": "es",
+  "appTitle": "Lota Offline",
+  "loginTitle": "Bienvenido",
+  "loginSubtitle": "Iniciá sesión para continuar",
+  "loginEmailLabel": "Email",
+  "loginPasswordLabel": "Contraseña",
+  "loginButtonText": "Iniciar sesión",
+  "loginEmailRequired": "Ingresá tu email",
+  "loginPasswordRequired": "Ingresá tu contraseña",
+  "homeTitle": "Inicio",
+  "settingsTitle": "Configuración",
+  "logoutConfirmTitle": "Cerrar sesión",
+  "logoutConfirmMessage": "¿Estás seguro que querés cerrar sesión?",
+  "logoutButtonText": "Cerrar sesión",
+  "cancelButtonText": "Cancelar",
+  "retryButtonText": "Reintentar",
+  "errorUnknown": "Error desconocido"
+}

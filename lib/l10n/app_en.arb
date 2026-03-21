@@ -1,0 +1,19 @@
+{
+  "@@locale": "en",
+  "appTitle": "Lota Offline",
+  "loginTitle": "Welcome",
+  "loginSubtitle": "Sign in to continue",
+  "loginEmailLabel": "Email",
+  "loginPasswordLabel": "Password",
+  "loginButtonText": "Sign in",
+  "loginEmailRequired": "Enter your email",
+  "loginPasswordRequired": "Enter your password",
+  "homeTitle": "Home",
+  "settingsTitle": "Settings",
+  "logoutConfirmTitle": "Sign out",
+  "logoutConfirmMessage": "Are you sure you want to sign out?",
+  "logoutButtonText": "Sign out",
+  "cancelButtonText": "Cancel",
+  "retryButtonText": "Retry",
+  "errorUnknown": "Unknown error"
+}

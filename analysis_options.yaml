@@ -1,0 +1,17 @@
+include: package:flutter_lints/flutter.yaml
+
+linter:
+  rules:
+    - always_declare_return_types
+    - avoid_print
+    - prefer_const_constructors
+    - prefer_const_declarations
+    - sort_pub_dependencies
+
+analyzer:
+  exclude:
+    - "**/*.g.dart"
+    - "**/*.freezed.dart"
+  errors:
+    # withOpacity sigue funcionando en todas las versiones de Flutter 3.x
+    deprecated_member_use: ignore

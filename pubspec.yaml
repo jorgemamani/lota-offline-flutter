@@ -1,0 +1,38 @@
+name: lota_offline
+description: Lota — Bingo 90 Argentino. App offline para jugar Lota Argentina.
+publish_to: "none"
+
+version: 1.0.0+1
+
+environment:
+  sdk: ">=3.0.0 <4.0.0"
+
+dependencies:
+  cupertino_icons: ^1.0.8
+  dio: ^5.7.0
+  equatable: ^2.0.7
+  flutter:
+    sdk: flutter
+  flutter_bloc: ^9.1.1
+  flutter_dotenv: ^6.0.0
+  flutter_localizations:
+    sdk: flutter
+  get_it: ^9.1.1
+  go_router: ^14.8.1
+  google_fonts: ^8.0.2
+  intl: ^0.20.2
+
+dev_dependencies:
+  bloc_test: ^10.0.0
+  flutter_lints: ^6.0.0
+  flutter_test:
+    sdk: flutter
+  mocktail: ^1.0.4
+
+flutter:
+  uses-material-design: true
+  generate: true
+
+  assets:
+    - .env.dev
+    - .env.prod
