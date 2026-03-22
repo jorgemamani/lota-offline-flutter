@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../routing/route_names.dart';
+import '../../../../shared/constants/app_assets.dart';
+import '../../../../shared/widgets/image_component.dart';
 import '../../../game/domain/models/game_mode.dart';
 import '../../../game/presentation/pages/carton_select_page.dart';
 
@@ -27,7 +29,8 @@ class HomePage extends StatelessWidget {
                       mode: GameMode.markOnly,
                       icon: Icons.edit_note_rounded,
                       color: const Color(0xFF2563EB),
-                      onTap: () => _goToCartonSelect(context, GameMode.markOnly),
+                      onTap: () =>
+                          _goToCartonSelect(context, GameMode.markOnly),
                     ),
                     const SizedBox(height: 16),
                     _GameModeCard(
@@ -41,7 +44,8 @@ class HomePage extends StatelessWidget {
                       mode: GameMode.combined,
                       icon: Icons.join_full_rounded,
                       color: const Color(0xFF059669),
-                      onTap: () => _goToCartonSelect(context, GameMode.combined),
+                      onTap: () =>
+                          _goToCartonSelect(context, GameMode.combined),
                     ),
                   ],
                 ),
@@ -71,8 +75,12 @@ class _Header extends StatelessWidget {
       children: [
         Row(
           children: [
-            Icon(Icons.grid_on_rounded,
-                color: theme.colorScheme.primary, size: 32),
+            const ImageComponent(
+              imagePath: AppAssets.lotaIcon,
+              width: 60,
+              height: 60,
+              fit: BoxFit.contain,
+            ),
             const SizedBox(width: 10),
             Text(
               'LOTA',
@@ -159,8 +167,11 @@ class _GameModeCard extends StatelessWidget {
                 ),
               ),
               const SizedBox(width: 8),
-              Icon(Icons.arrow_forward_ios_rounded,
-                  size: 16, color: theme.colorScheme.outline),
+              Icon(
+                Icons.arrow_forward_ios_rounded,
+                size: 16,
+                color: theme.colorScheme.outline,
+              ),
             ],
           ),
         ),

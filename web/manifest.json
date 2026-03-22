@@ -3,7 +3,7 @@
     "short_name": "Lota",
     "start_url": ".",
     "display": "standalone",
-    "background_color": "#2563EB",
+    "background_color": "#1E3A5F",
     "theme_color": "#2563EB",
     "description": "Lota — Bingo 90 Argentino",
     "orientation": "portrait-primary",

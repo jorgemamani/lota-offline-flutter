@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../routing/route_names.dart';
+import '../../../../shared/constants/app_assets.dart';
+import '../../../../shared/widgets/image_component.dart';
 
 class SplashPage extends StatefulWidget {
   const SplashPage({super.key});
@@ -49,20 +51,13 @@ class _SplashPageState extends State<SplashPage>
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Container(
-                width: 100,
-                height: 100,
-                decoration: BoxDecoration(
-                  color: colors.onPrimary.withOpacity(0.15),
-                  shape: BoxShape.circle,
-                ),
-                child: Icon(
-                  Icons.grid_on_rounded,
-                  size: 56,
-                  color: colors.onPrimary,
-                ),
+              const ImageComponent(
+                imagePath: AppAssets.lotaIcon,
+                width: 200,
+                height: 200,
+                fit: BoxFit.contain,
               ),
-              const SizedBox(height: 28),
+              const SizedBox(height: 10),
               Text(
                 'LOTA',
                 style: TextStyle(
@@ -73,21 +68,19 @@ class _SplashPageState extends State<SplashPage>
                 ),
               ),
               Text(
-                'Bingo 90 Argentino',
+                'Offline',
                 style: TextStyle(
                   fontSize: 14,
                   color: colors.onPrimary.withOpacity(0.75),
                   letterSpacing: 2,
                 ),
               ),
-              const SizedBox(height: 64),
-              SizedBox(
-                width: 24,
-                height: 24,
-                child: CircularProgressIndicator(
-                  strokeWidth: 2.5,
-                  valueColor:
-                      AlwaysStoppedAnimation<Color>(colors.onPrimary.withOpacity(0.6)),
+              Text(
+                'Bingo 90 Argentino',
+                style: TextStyle(
+                  fontSize: 14,
+                  color: colors.onPrimary.withOpacity(0.75),
+                  letterSpacing: 2,
                 ),
               ),
             ],
