@@ -6,7 +6,10 @@ import 'core/http_client/domain/http_client.dart';
 import 'core/local_storage/data/local_storage_impl.dart';
 import 'core/local_storage/domain/local_storage.dart';
 import 'features/game/data/carton_manager.dart';
+import 'features/game/data/repositories/favorite_cartons_repository_impl.dart';
+import 'features/game/domain/repositories/favorite_cartons_repository.dart';
 import 'features/game/presentation/bloc/game_bloc.dart';
+import 'features/game/presentation/cubit/favorites_cubit.dart';
 import 'features/home/presentation/cubit/theme_cubit.dart';
 
 final sl = GetIt.instance;
@@ -24,14 +27,22 @@ Future<void> configureDependencies() async {
   // flutter_secure_storage cuando se agregue autenticación en v2.
   sl.registerLazySingleton<ILocalStorage>(() => InMemoryLocalStorage());
 
+  // ── Favoritos ──────────────────────────────────────────────────────
+  // El repositorio es singleton: una sola fuente de verdad para SharedPrefs.
+  sl.registerLazySingleton<IFavoriteCartonsRepository>(
+    () => FavoriteCartonsRepositoryImpl(),
+  );
+
   // ── Dominio del juego ──────────────────────────────────────────────
   sl.registerLazySingleton<CartonManager>(CartonManager.new);
 
   // ── BLoCs / Cubits ────────────────────────────────────────────────
   // Factory: cada llamada crea una instancia nueva.
-  // LotaApp obtiene la instancia a través de BlocProvider(create: (_) => sl<GameBloc>()).
   sl.registerFactory<GameBloc>(GameBloc.new);
 
-  // Singleton: el tema debe ser el mismo en toda la app.
+  // Singletons: estado global que vive toda la sesión.
   sl.registerLazySingleton<ThemeCubit>(ThemeCubit.new);
+  sl.registerLazySingleton<FavoritesCubit>(
+    () => FavoritesCubit(sl<IFavoriteCartonsRepository>()),
+  );
 }
