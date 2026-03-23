@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../routing/route_names.dart';
@@ -6,6 +7,7 @@ import '../../../../shared/constants/app_assets.dart';
 import '../../../../shared/widgets/image_component.dart';
 import '../../../game/domain/models/game_mode.dart';
 import '../../../game/presentation/pages/carton_select_page.dart';
+import '../cubit/theme_cubit.dart';
 
 class HomePage extends StatelessWidget {
   const HomePage({super.key});
@@ -89,6 +91,8 @@ class _Header extends StatelessWidget {
                 letterSpacing: 4,
               ),
             ),
+            const Spacer(),
+            const _ThemeToggle(),
           ],
         ),
         const SizedBox(height: 4),
@@ -99,6 +103,92 @@ class _Header extends StatelessWidget {
           ),
         ),
       ],
+    );
+  }
+}
+
+class _ThemeToggle extends StatelessWidget {
+  const _ThemeToggle();
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final currentMode = context.watch<ThemeCubit>().state;
+
+    return Container(
+      padding: const EdgeInsets.all(4),
+      decoration: BoxDecoration(
+        color: theme.colorScheme.surfaceContainerHighest,
+        borderRadius: BorderRadius.circular(14),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          _ThemeButton(
+            icon: Icons.brightness_auto_rounded,
+            tooltip: 'Automático',
+            selected: currentMode == ThemeMode.system,
+            onTap: () => context.read<ThemeCubit>().setSystem(),
+          ),
+          _ThemeButton(
+            icon: Icons.light_mode_rounded,
+            tooltip: 'Claro',
+            selected: currentMode == ThemeMode.light,
+            onTap: () => context.read<ThemeCubit>().setLight(),
+          ),
+          _ThemeButton(
+            icon: Icons.dark_mode_rounded,
+            tooltip: 'Oscuro',
+            selected: currentMode == ThemeMode.dark,
+            onTap: () => context.read<ThemeCubit>().setDark(),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _ThemeButton extends StatelessWidget {
+  const _ThemeButton({
+    required this.icon,
+    required this.tooltip,
+    required this.selected,
+    required this.onTap,
+  });
+
+  final IconData icon;
+  final String tooltip;
+  final bool selected;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
+    return Tooltip(
+      message: tooltip,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        curve: Curves.easeInOut,
+        decoration: BoxDecoration(
+          color: selected ? theme.colorScheme.primaryContainer : Colors.transparent,
+          borderRadius: BorderRadius.circular(10),
+        ),
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(10),
+          child: Padding(
+            padding: const EdgeInsets.all(8),
+            child: Icon(
+              icon,
+              size: 20,
+              color: selected
+                  ? theme.colorScheme.primary
+                  : theme.colorScheme.onSurfaceVariant,
+            ),
+          ),
+        ),
+      ),
     );
   }
 }

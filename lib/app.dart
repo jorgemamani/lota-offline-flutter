@@ -5,6 +5,7 @@ import 'package:google_fonts/google_fonts.dart';
 
 import 'dependency_injection.dart';
 import 'features/game/presentation/bloc/game_bloc.dart';
+import 'features/home/presentation/cubit/theme_cubit.dart';
 import 'routing/app_router.dart';
 
 class LotaApp extends StatelessWidget {
@@ -12,24 +13,31 @@ class LotaApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider(
-      create: (_) => sl<GameBloc>(),
-      child: MaterialApp.router(
-        title: 'Lota',
-        debugShowCheckedModeBanner: false,
-        theme: _buildTheme(Brightness.light),
-        darkTheme: _buildTheme(Brightness.dark),
-        themeMode: ThemeMode.system,
-        routerConfig: appRouter,
-        localizationsDelegates: const [
-          GlobalMaterialLocalizations.delegate,
-          GlobalWidgetsLocalizations.delegate,
-          GlobalCupertinoLocalizations.delegate,
-        ],
-        supportedLocales: const [
-          Locale('es'),
-        ],
-        locale: const Locale('es'),
+    return MultiBlocProvider(
+      providers: [
+        BlocProvider(create: (_) => sl<GameBloc>()),
+        BlocProvider(create: (_) => sl<ThemeCubit>()),
+      ],
+      child: BlocBuilder<ThemeCubit, ThemeMode>(
+        builder: (context, themeMode) {
+          return MaterialApp.router(
+            title: 'Lota',
+            debugShowCheckedModeBanner: false,
+            theme: _buildTheme(Brightness.light),
+            darkTheme: _buildTheme(Brightness.dark),
+            themeMode: themeMode,
+            routerConfig: appRouter,
+            localizationsDelegates: const [
+              GlobalMaterialLocalizations.delegate,
+              GlobalWidgetsLocalizations.delegate,
+              GlobalCupertinoLocalizations.delegate,
+            ],
+            supportedLocales: const [
+              Locale('es'),
+            ],
+            locale: const Locale('es'),
+          );
+        },
       ),
     );
   }

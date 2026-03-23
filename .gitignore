@@ -73,3 +73,6 @@ lib/l10n/app_localizations_*.dart
 
 # Coverage
 coverage/
+
+# FVM Version Cache
+.fvm/

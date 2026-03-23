@@ -7,6 +7,7 @@ import 'core/local_storage/data/local_storage_impl.dart';
 import 'core/local_storage/domain/local_storage.dart';
 import 'features/game/data/carton_manager.dart';
 import 'features/game/presentation/bloc/game_bloc.dart';
+import 'features/home/presentation/cubit/theme_cubit.dart';
 
 final sl = GetIt.instance;
 
@@ -26,8 +27,11 @@ Future<void> configureDependencies() async {
   // ── Dominio del juego ──────────────────────────────────────────────
   sl.registerLazySingleton<CartonManager>(CartonManager.new);
 
-  // ── BLoCs ──────────────────────────────────────────────────────────
+  // ── BLoCs / Cubits ────────────────────────────────────────────────
   // Factory: cada llamada crea una instancia nueva.
   // LotaApp obtiene la instancia a través de BlocProvider(create: (_) => sl<GameBloc>()).
   sl.registerFactory<GameBloc>(GameBloc.new);
+
+  // Singleton: el tema debe ser el mismo en toda la app.
+  sl.registerLazySingleton<ThemeCubit>(ThemeCubit.new);
 }
