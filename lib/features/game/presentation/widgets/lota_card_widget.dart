@@ -178,10 +178,10 @@ class _Cell extends StatelessWidget {
       fg = cardColor.onPrimary;
     } else if (isDrawn) {
       bg = cardColor.primary.withOpacity(0.35);
-      fg = themeColors.onSurface;
+      fg = Colors.black87;
     } else {
       bg = Colors.white;
-      fg = themeColors.onSurface;
+      fg = Colors.black87;
     }
 
     return GestureDetector(
