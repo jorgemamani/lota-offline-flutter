@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../../dependency_injection.dart';
 import '../../../../routing/route_names.dart';
+import '../../../../shared/constants/app_colors.dart';
 import '../../../../shared/managers/alert_manager.dart';
 import '../../../../shared/constants/lota_card_colors.dart';
 import '../../data/carton_manager.dart';
@@ -510,7 +511,7 @@ class _CartonListItem extends StatelessWidget {
                                 : Icons.star_outline_rounded,
                             size: 22,
                             color: isFav
-                                ? const Color(0xFFD97706)
+                                ? AppColors.favorite
                                 : theme.colorScheme.outlineVariant,
                           ),
                         ),

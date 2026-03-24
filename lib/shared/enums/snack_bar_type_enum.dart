@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../constants/app_colors.dart';
+
 enum SnackBarTypeEnum { info, success, warning, error }
 
 Map<String, dynamic> _generateMapSnackBarTypeEnum({
@@ -19,25 +21,25 @@ Map<String, dynamic> _generateMapSnackBarTypeEnum({
 extension SnackBarTypeEnumExtension on SnackBarTypeEnum {
   static final Map<SnackBarTypeEnum, Map<String, dynamic>> states = {
     SnackBarTypeEnum.info: _generateMapSnackBarTypeEnum(
-      backgroundColor: const Color(0xFF334155),
+      backgroundColor: AppColors.statusInfo,
       foregroundColor: Colors.white,
       icon: Icons.info_outline_rounded,
       defaultDuration: const Duration(seconds: 3),
     ),
     SnackBarTypeEnum.success: _generateMapSnackBarTypeEnum(
-      backgroundColor: const Color(0xFF059669),
+      backgroundColor: AppColors.statusSuccess,
       foregroundColor: Colors.white,
       icon: Icons.check_circle_outline_rounded,
       defaultDuration: const Duration(seconds: 3),
     ),
     SnackBarTypeEnum.warning: _generateMapSnackBarTypeEnum(
-      backgroundColor: const Color(0xFFD97706),
+      backgroundColor: AppColors.statusWarning,
       foregroundColor: Colors.white,
       icon: Icons.warning_amber_rounded,
       defaultDuration: const Duration(seconds: 3),
     ),
     SnackBarTypeEnum.error: _generateMapSnackBarTypeEnum(
-      backgroundColor: const Color(0xFFDC2626),
+      backgroundColor: AppColors.statusError,
       foregroundColor: Colors.white,
       icon: Icons.error_outline_rounded,
       defaultDuration: const Duration(seconds: 4),

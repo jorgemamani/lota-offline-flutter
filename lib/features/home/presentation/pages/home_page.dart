@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../../shared/constants/app_colors.dart';
+
 import '../../../../routing/route_names.dart';
 import '../../../../shared/constants/app_assets.dart';
 import '../../../../shared/widgets/image_component.dart';
@@ -30,7 +32,7 @@ class HomePage extends StatelessWidget {
                     _GameModeCard(
                       mode: GameMode.markOnly,
                       icon: Icons.edit_note_rounded,
-                      color: const Color(0xFF2563EB),
+                      color: AppColors.gameModeMarkOnly,
                       onTap: () =>
                           _goToCartonSelect(context, GameMode.markOnly),
                     ),
@@ -38,14 +40,14 @@ class HomePage extends StatelessWidget {
                     _GameModeCard(
                       mode: GameMode.bolilleroOnly,
                       icon: Icons.casino_rounded,
-                      color: const Color(0xFF7C3AED),
+                      color: AppColors.gameModeBolillero,
                       onTap: () => context.push(RouteNames.bolillero),
                     ),
                     const SizedBox(height: 16),
                     _GameModeCard(
                       mode: GameMode.combined,
                       icon: Icons.join_full_rounded,
-                      color: const Color(0xFF059669),
+                      color: AppColors.gameModeCombined,
                       onTap: () =>
                           _goToCartonSelect(context, GameMode.combined),
                     ),

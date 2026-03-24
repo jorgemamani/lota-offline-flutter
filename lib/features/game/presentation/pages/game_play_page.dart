@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../routing/route_names.dart';
+import '../../../../shared/constants/app_colors.dart';
 import '../../../../shared/constants/lota_card_colors.dart';
 import '../../../../shared/widgets/loading_indicator.dart';
 import '../../../bolillero/presentation/widgets/bolillero_widget.dart';
@@ -309,12 +310,12 @@ class _PrizeButtons extends StatelessWidget {
             ),
           )
         else
-          Expanded(
+          const Expanded(
             child: Chip(
-              label: const Text('✓ Línea'),
-              backgroundColor: Colors.green.shade50,
-              side: BorderSide(color: Colors.green.shade200),
-              labelStyle: const TextStyle(color: Colors.green),
+              label: Text('✓ Línea'),
+              backgroundColor: AppColors.prizeLineaBackground,
+              side: BorderSide(color: AppColors.prizeLineaBorder),
+              labelStyle: TextStyle(color: AppColors.prizeLineaLabel),
             ),
           ),
         const SizedBox(width: 8),
@@ -327,17 +328,17 @@ class _PrizeButtons extends StatelessWidget {
               label: const Text('¡Lota!'),
               style: FilledButton.styleFrom(
                 visualDensity: VisualDensity.compact,
-                backgroundColor: Colors.amber.shade700,
+                backgroundColor: AppColors.prizeLotaButton,
               ),
             ),
           )
         else
-          Expanded(
+          const Expanded(
             child: Chip(
-              label: const Text('✓ Lota'),
-              backgroundColor: Colors.amber.shade50,
-              side: BorderSide(color: Colors.amber.shade300),
-              labelStyle: TextStyle(color: Colors.amber.shade800),
+              label: Text('✓ Lota'),
+              backgroundColor: AppColors.prizeLotaBackground,
+              side: BorderSide(color: AppColors.prizeLotaBorder),
+              labelStyle: TextStyle(color: AppColors.prizeLotaLabel),
             ),
           ),
       ],

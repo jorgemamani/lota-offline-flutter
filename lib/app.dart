@@ -4,6 +4,7 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import 'dependency_injection.dart';
+import 'shared/constants/app_colors.dart';
 import 'features/game/presentation/bloc/game_bloc.dart';
 import 'features/game/presentation/cubit/favorites_cubit.dart';
 import 'features/home/presentation/cubit/theme_cubit.dart';
@@ -61,7 +62,7 @@ class LotaApp extends StatelessWidget {
 
   ThemeData _buildTheme(Brightness brightness) {
     final colorScheme = ColorScheme.fromSeed(
-      seedColor: const Color(0xFF2563EB),
+      seedColor: AppColors.primary,
       brightness: brightness,
     );
 
