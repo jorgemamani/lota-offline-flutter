@@ -347,6 +347,7 @@ class _FavoritosTab extends StatelessWidget {
               canSelect: selectedIds.length < maxSelection ||
                   selectedIds.contains(fav.id),
               onTap: () => onToggleSelect(fav.id, carton, color),
+              confirmRemoveFavorite: true,
             );
           },
         );
@@ -410,6 +411,7 @@ class _CartonListItem extends StatelessWidget {
     required this.isSelected,
     required this.canSelect,
     required this.onTap,
+    this.confirmRemoveFavorite = false,
   });
 
   final LotaCardModel carton;
@@ -423,6 +425,10 @@ class _CartonListItem extends StatelessWidget {
   /// false cuando ya se alcanzó el máximo de selección y este no está seleccionado.
   final bool canSelect;
   final VoidCallback onTap;
+
+  /// Si es `true`, quitar de favoritos muestra un sheet de confirmación primero.
+  /// Usar `true` en el tab "Favoritos", `false` en el tab "Todos".
+  final bool confirmRemoveFavorite;
 
   @override
   Widget build(BuildContext context) {
@@ -498,10 +504,39 @@ class _CartonListItem extends StatelessWidget {
                     builder: (context, favState) {
                       final isFav = favState.isFavorite(contentId);
                       return GestureDetector(
-                        onTap: () => context.read<FavoritesCubit>().toggle(
-                              grid: carton.card,
-                              colorIndex: colorIndex < 0 ? 0 : colorIndex,
-                            ),
+                        onTap: () {
+                          if (isFav && confirmRemoveFavorite) {
+                            AlertManager.showConfirmSheet(
+                              title: 'Quitar de favoritos',
+                              description:
+                                  'Este cartón fue generado al azar y no '
+                                  'volverás a encontrarlo. Si lo quitás, '
+                                  'se perderá para siempre.',
+                              options: [
+                                SheetOption(
+                                  label: 'Quitar favorito',
+                                  isDestructive: true,
+                                  onTap: () =>
+                                      context.read<FavoritesCubit>().toggle(
+                                            grid: carton.card,
+                                            colorIndex:
+                                                colorIndex < 0 ? 0 : colorIndex,
+                                          ),
+                                ),
+                                SheetOption(
+                                  label: 'Cancelar',
+                                  style: SheetOptionStyle.outlined,
+                                  onTap: () {},
+                                ),
+                              ],
+                            );
+                          } else {
+                            context.read<FavoritesCubit>().toggle(
+                                  grid: carton.card,
+                                  colorIndex: colorIndex < 0 ? 0 : colorIndex,
+                                );
+                          }
+                        },
                         child: Tooltip(
                           message:
                               isFav ? 'Quitar de favoritos' : 'Guardar favorito',

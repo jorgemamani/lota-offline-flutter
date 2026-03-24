@@ -1,8 +1,12 @@
 import 'package:flutter/material.dart';
 
 import '../enums/snack_bar_type_enum.dart';
+import '../widgets/bottom_sheets/confirm_bottom_sheet.dart';
+import '../widgets/bottom_sheets/info_bottom_sheet.dart';
 
 export '../enums/snack_bar_type_enum.dart';
+export '../widgets/bottom_sheets/confirm_bottom_sheet.dart'
+    show SheetOption, SheetOptionStyle;
 
 /// Manager centralizado de mensajes y overlays de UI.
 ///
@@ -34,7 +38,6 @@ export '../enums/snack_bar_type_enum.dart';
 /// Convención del proyecto: todos los managers terminan en `_manager.dart`.
 abstract final class AlertManager {
   static GlobalKey<ScaffoldMessengerState>? _messengerKey;
-  // ignore: unused_field — se usará cuando se implementen Dialog y BottomSheet
   static GlobalKey<NavigatorState>? _navigatorKey;
 
   // ── Setup ────────────────────────────────────────────────────────────────
@@ -160,22 +163,147 @@ abstract final class AlertManager {
   // TODO: retorna Future<bool> — true si el usuario confirmó
   // static Future<bool> showConfirmDialog({ required String title, required String message, String confirmLabel, String cancelLabel }) { ... }
 
-  // ── Bottom Sheet informativo ─────────────────────────────────────────────
-  // Muestra información estática: título, mensaje, ícono opcional y un botón
-  // de cierre. No retorna valor.
-  // TODO: implementar usando _navigatorKey para mostrar sin context
-  // static Future<void> showInfoSheet({ required String title, required String message, IconData? icon }) { ... }
+  // ── Bottom Sheet informativo ──────────────────────────────────────────────
+
+  /// Muestra un bottom sheet con ícono opcional, título y mensaje.
+  ///
+  /// Solo tiene un botón de cierre cuyo label se puede personalizar
+  /// con [closeLabel] (default: "Entendido"). No retorna valor.
+  ///
+  /// ```dart
+  /// AlertManager.showInfoSheet(
+  ///   title: 'Cartón guardado',
+  ///   message: 'Podés encontrarlo en la sección de Favoritos.',
+  ///   icon: Icons.check_circle_outline,
+  /// );
+  /// ```
+  static Future<void> showInfoSheet({
+    required String title,
+    required String message,
+    IconData? icon,
+    String closeLabel = 'Entendido',
+  }) {
+    assert(
+      _navigatorKey != null,
+      'AlertManager.setup() debe llamarse antes de showInfoSheet().',
+    );
+
+    final context = _navigatorKey?.currentContext;
+    if (context == null) return Future.value();
+
+    return showModalBottomSheet<void>(
+      context: context,
+      useSafeArea: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (_) => InfoBottomSheet(
+        title: title,
+        message: message,
+        icon: icon,
+        closeLabel: closeLabel,
+      ),
+    );
+  }
 
   // ── Bottom Sheet de confirmación ──────────────────────────────────────────
-  // Presenta una acción destructiva o irreversible con dos botones.
-  // Retorna Future<bool> — true si el usuario confirmó, false si canceló.
-  // TODO: implementar usando _navigatorKey para mostrar sin context
-  // static Future<bool> showConfirmSheet({ required String title, required String message, String confirmLabel, String cancelLabel, bool isDestructive }) { ... }
 
-  // ── Bottom Sheet con contenido personalizado ──────────────────────────────
-  // Recibe cualquier widget como contenido. Útil para formularios, listas,
-  // selección de opciones, etc. Retorna el valor que el sheet decida pasar
-  // al cerrar via Navigator.pop(context, value).
-  // TODO: implementar usando _navigatorKey para mostrar sin context
-  // static Future<T?> showCustomSheet<T>({ required WidgetBuilder builder, bool isDismissible = true, bool enableDrag = true }) { ... }
+  /// Muestra un bottom sheet con título, descripción y entre 2 y 3 opciones.
+  ///
+  /// Cada opción cierra el sheet antes de ejecutar su callback.
+  /// El estilo de cada botón se controla con [SheetOption.style] e
+  /// [SheetOption.isDestructive].
+  ///
+  /// ```dart
+  /// AlertManager.showConfirmSheet(
+  ///   title: '¿Eliminar favorito?',
+  ///   description: 'Esta acción no se puede deshacer.',
+  ///   options: [
+  ///     SheetOption(
+  ///       label: 'Eliminar',
+  ///       onTap: () => cubit.removeFavorite(id),
+  ///       isDestructive: true,
+  ///     ),
+  ///     SheetOption(
+  ///       label: 'Cancelar',
+  ///       onTap: () {},
+  ///       style: SheetOptionStyle.outlined,
+  ///     ),
+  ///   ],
+  /// );
+  /// ```
+  static Future<void> showConfirmSheet({
+    required String title,
+    required String description,
+    required List<SheetOption> options,
+  }) {
+    assert(
+      _navigatorKey != null,
+      'AlertManager.setup() debe llamarse antes de showConfirmSheet().',
+    );
+    assert(
+      options.length >= 2 && options.length <= 3,
+      'showConfirmSheet requiere entre 2 y 3 opciones.',
+    );
+
+    final context = _navigatorKey?.currentContext;
+    if (context == null) return Future.value();
+
+    return showModalBottomSheet<void>(
+      context: context,
+      useSafeArea: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (_) => ConfirmBottomSheet(
+        title: title,
+        description: description,
+        options: options,
+      ),
+    );
+  }
+
+  // ── Bottom Sheet personalizado ────────────────────────────────────────────
+
+  /// Muestra un bottom sheet con contenido completamente personalizado.
+  ///
+  /// El [child] puede ser cualquier widget. Para obtener el valor de retorno,
+  /// usa `Navigator.of(context).pop(value)` desde dentro del widget.
+  ///
+  /// [isDismissible]: si se puede cerrar tocando fuera. Default: `true`.
+  /// [enableDrag]: si se puede arrastrar hacia abajo para cerrar. Default: `true`.
+  /// [isScrollControlled]: si el sheet puede ocupar más del 50% de la pantalla.
+  ///   Activalo si el child contiene un formulario o lista larga. Default: `false`.
+  ///
+  /// ```dart
+  /// final result = await AlertManager.showCustomSheet<String>(
+  ///   child: MyPickerWidget(),
+  /// );
+  /// ```
+  static Future<T?> showCustomSheet<T>({
+    required Widget child,
+    bool isDismissible = true,
+    bool enableDrag = true,
+    bool isScrollControlled = false,
+  }) {
+    assert(
+      _navigatorKey != null,
+      'AlertManager.setup() debe llamarse antes de showCustomSheet().',
+    );
+
+    final context = _navigatorKey?.currentContext;
+    if (context == null) return Future.value(null);
+
+    return showModalBottomSheet<T>(
+      context: context,
+      isDismissible: isDismissible,
+      enableDrag: enableDrag,
+      isScrollControlled: isScrollControlled,
+      useSafeArea: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (_) => child,
+    );
+  }
 }
