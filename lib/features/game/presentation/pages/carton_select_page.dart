@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../../dependency_injection.dart';
 import '../../../../routing/route_names.dart';
+import '../../../../shared/managers/alert_manager.dart';
 import '../../../../shared/constants/lota_card_colors.dart';
 import '../../data/carton_manager.dart';
 import '../../domain/models/favorite_carton.dart';
@@ -107,12 +108,8 @@ class _CartonSelectPageState extends State<CartonSelectPage>
         _selectedCards[id] = card;
         _selectedColors[id] = color;
       } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Máximo $_maxSelection cartones permitidos.'),
-            behavior: SnackBarBehavior.floating,
-            duration: Duration(seconds: 2),
-          ),
+        AlertManager.showSnackBarWarning(
+          message: 'Máximo $_maxSelection cartones permitidos.',
         );
       }
     });
