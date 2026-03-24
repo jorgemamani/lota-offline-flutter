@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:go_router/go_router.dart';
 
-import '../../../../routing/route_names.dart';
 import '../../../../shared/constants/app_colors.dart';
 import '../../../../shared/constants/lota_card_colors.dart';
+import '../../../../shared/managers/alert_manager.dart';
 import '../../../../shared/widgets/loading_indicator.dart';
 import '../../../bolillero/presentation/widgets/bolillero_widget.dart';
 import '../../domain/models/game_mode.dart';
@@ -42,37 +41,48 @@ class GamePlayPage extends StatelessWidget {
         appBar: AppBar(
           title: Text(args.mode.label),
           actions: [
-            // Botón bolillero en modal (sólo modo combined)
+            // Botón bolillero en modal (sólo modo combined, en curso o finalizado)
             if (args.mode == GameMode.combined)
               BlocBuilder<GameBloc, GameState>(
                 builder: (context, state) {
-                  if (state is! GameInProgress) return const SizedBox.shrink();
+                  if (state is GameIdle) return const SizedBox.shrink();
+                  final lastNum = switch (state) {
+                    GameInProgress() => state.lastDrawnNumber,
+                    GameOver() => state.drawnNumbers.isEmpty
+                        ? null
+                        : state.drawnNumbers.last,
+                    _ => null,
+                  };
                   return Stack(
                     alignment: Alignment.center,
+                    clipBehavior: Clip.none,
                     children: [
                       IconButton(
                         icon: const Icon(Icons.casino_rounded),
                         tooltip: 'Bolillero',
                         onPressed: () => _showBolilleroModal(context),
                       ),
-                      if (state.lastDrawnNumber != null)
+                      if (lastNum != null)
                         Positioned(
                           top: 8,
                           right: 6,
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 5, vertical: 1),
-                            decoration: BoxDecoration(
-                              color: Theme.of(context).colorScheme.primary,
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                            child: Text(
-                              '${state.lastDrawnNumber}',
-                              style: TextStyle(
-                                fontSize: 10,
-                                fontWeight: FontWeight.bold,
-                                color:
-                                    Theme.of(context).colorScheme.onPrimary,
+                          child: GestureDetector(
+                            onTap: () => _showBolilleroModal(context),
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 5, vertical: 1),
+                              decoration: BoxDecoration(
+                                color: Theme.of(context).colorScheme.primary,
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: Text(
+                                '$lastNum',
+                                style: TextStyle(
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.bold,
+                                  color:
+                                      Theme.of(context).colorScheme.onPrimary,
+                                ),
                               ),
                             ),
                           ),
@@ -81,20 +91,24 @@ class GamePlayPage extends StatelessWidget {
                   );
                 },
               ),
-            // Ronda actual
+            // Ronda actual (visible en curso y al terminar)
             BlocBuilder<GameBloc, GameState>(
               builder: (context, state) {
-                if (state is! GameInProgress) return const SizedBox.shrink();
+                final round = switch (state) {
+                  GameInProgress() => state.round,
+                  GameOver() => state.totalRounds,
+                  _ => null,
+                };
+                if (round == null) return const SizedBox.shrink();
                 return Padding(
                   padding: const EdgeInsets.only(right: 12),
                   child: Center(
                     child: Text(
-                      'R${state.round}',
-                      style:
-                          Theme.of(context).textTheme.labelLarge?.copyWith(
-                                color: Theme.of(context).colorScheme.primary,
-                                fontWeight: FontWeight.bold,
-                              ),
+                      'R$round',
+                      style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                            color: Theme.of(context).colorScheme.primary,
+                            fontWeight: FontWeight.bold,
+                          ),
                     ),
                   ),
                 );
@@ -104,20 +118,44 @@ class GamePlayPage extends StatelessWidget {
         ),
         body: BlocListener<GameBloc, GameState>(
           listener: (context, state) {
-            if (state is GameOver) _showGameOverDialog(context, state);
+            if (state is! GameOver) return;
+            final hasLota =
+                state.results.any((r) => r.prize == PrizeType.lota);
+            if (hasLota) {
+              AlertManager.showSnackBarSuccess(
+                message: '¡Lota! Partida finalizada.',
+              );
+            } else {
+              AlertManager.showSnackBar(
+                message: 'Se sortearon los 90 números.',
+              );
+            }
           },
           child: BlocBuilder<GameBloc, GameState>(
             builder: (context, state) {
-              if (state is GameIdle) {
-                return const LoadingIndicator();
-              }
-              if (state is GameOver) {
-                return _GameOverBody(state: state);
-              }
+              if (state is GameIdle) return const LoadingIndicator();
               if (state is GameInProgress) {
                 return _GameBody(
                   state: state,
                   mode: args.mode,
+                  cardColors: args.cardColors,
+                );
+              }
+              if (state is GameOver) {
+                // Tablero congelado: muestra el estado final sin permitir acciones.
+                final frozen = GameInProgress(
+                  mode: state.mode,
+                  cartones: state.cartones,
+                  drawnNumbers: state.drawnNumbers,
+                  availableNumbers: const [],
+                  lastDrawnNumber: state.drawnNumbers.isEmpty
+                      ? null
+                      : state.drawnNumbers.last,
+                  results: state.results,
+                );
+                return _GameBody(
+                  state: frozen,
+                  mode: state.mode,
                   cardColors: args.cardColors,
                 );
               }
@@ -174,44 +212,6 @@ class GamePlayPage extends StatelessWidget {
     );
   }
 
-  void _showGameOverDialog(BuildContext context, GameOver state) {
-    final winners = state.results.where((r) => r.prize == PrizeType.lota);
-    showDialog<void>(
-      context: context,
-      barrierDismissible: false,
-      builder: (_) => AlertDialog(
-        title: const Row(
-          children: [
-            Text('🎉 ', style: TextStyle(fontSize: 28)),
-            Text('¡Partida finalizada!'),
-          ],
-        ),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text('Números sorteados: ${state.totalRounds}'),
-            if (winners.isNotEmpty) ...[
-              const SizedBox(height: 8),
-              const Text('Premio Lota:',
-                  style: TextStyle(fontWeight: FontWeight.bold)),
-              ...winners.map(
-                  (r) => Text('• ${r.cartonId} (ronda ${r.roundNumber})')),
-            ],
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () {
-              Navigator.of(context).pop();
-              context.go(RouteNames.home);
-            },
-            child: const Text('Volver al inicio'),
-          ),
-        ],
-      ),
-    );
-  }
 }
 
 // ── Vistas internas ────────────────────────────────────────────────────────────
@@ -257,8 +257,7 @@ class _GameBody extends StatelessWidget {
                   Text(
                     '${carton.markedCount} / ${carton.totalNumbers}',
                     style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                          color:
-                              Theme.of(context).colorScheme.onSurfaceVariant,
+                          color: Theme.of(context).colorScheme.onSurfaceVariant,
                         ),
                   ),
                 ],
@@ -346,44 +345,3 @@ class _PrizeButtons extends StatelessWidget {
   }
 }
 
-class _GameOverBody extends StatelessWidget {
-  const _GameOverBody({required this.state});
-
-  final GameOver state;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(32),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Text('🎉', style: TextStyle(fontSize: 64)),
-            const SizedBox(height: 16),
-            Text(
-              '¡Partida terminada!',
-              style: theme.textTheme.headlineSmall
-                  ?.copyWith(fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              '${state.totalRounds} números sorteados',
-              style: theme.textTheme.bodyLarge?.copyWith(
-                color: theme.colorScheme.onSurfaceVariant,
-              ),
-            ),
-            const SizedBox(height: 32),
-            FilledButton.icon(
-              onPressed: () => context.go(RouteNames.home),
-              icon: const Icon(Icons.home_rounded),
-              label: const Text('Volver al inicio'),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}

@@ -20,7 +20,12 @@ class BolilleroWidget extends StatelessWidget {
         final drawn = state is GameInProgress
             ? state.drawnNumbers
             : (state as GameOver).drawnNumbers;
-        final last = state is GameInProgress ? state.lastDrawnNumber : null;
+        final last = switch (state) {
+          GameInProgress() => state.lastDrawnNumber,
+          GameOver() =>
+            state.drawnNumbers.isEmpty ? null : state.drawnNumbers.last,
+          _ => null,
+        };
         final canDraw =
             state is GameInProgress && state.availableNumbers.isNotEmpty;
 
