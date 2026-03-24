@@ -163,7 +163,7 @@ class _HistoryItem extends StatelessWidget {
             boxShadow: isLatest
                 ? [
                     BoxShadow(
-                      color: colors.primary.withOpacity(0.35),
+                      color: colors.primary.withValues(alpha: 0.35),
                       blurRadius: 10,
                       spreadRadius: 1,
                     ),
@@ -207,7 +207,7 @@ class _LastNumberDisplay extends StatelessWidget {
           color: colors.primaryContainer,
           boxShadow: [
             BoxShadow(
-              color: colors.primary.withOpacity(0.25),
+              color: colors.primary.withValues(alpha: 0.25),
               blurRadius: 24,
               spreadRadius: 4,
             ),

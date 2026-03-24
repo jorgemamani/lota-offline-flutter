@@ -86,7 +86,7 @@ class _CartonSelectPageState extends State<CartonSelectPage>
     final toLoad = remaining < _pageSize ? remaining : _pageSize;
     setState(() => _isLoadingMore = true);
     final newCards = sl<CartonManager>().generateCards(toLoad);
-    final palette = LotaCardColors.all;
+    const palette = LotaCardColors.all;
     setState(() {
       for (final card in newCards) {
         _cardColors[card.id] = palette[_random.nextInt(palette.length)];
@@ -108,10 +108,10 @@ class _CartonSelectPageState extends State<CartonSelectPage>
         _selectedColors[id] = color;
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
+          const SnackBar(
             content: Text('Máximo $_maxSelection cartones permitidos.'),
             behavior: SnackBarBehavior.floating,
-            duration: const Duration(seconds: 2),
+            duration: Duration(seconds: 2),
           ),
         );
       }
@@ -448,7 +448,7 @@ class _CartonListItem extends StatelessWidget {
           boxShadow: isSelected
               ? [
                   BoxShadow(
-                    color: accentColor.withOpacity(0.22),
+                    color: accentColor.withValues(alpha: 0.22),
                     blurRadius: 10,
                     spreadRadius: 1,
                   ),

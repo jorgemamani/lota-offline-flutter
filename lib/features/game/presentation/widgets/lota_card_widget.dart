@@ -171,13 +171,13 @@ class _Cell extends StatelessWidget {
     final Color fg;
 
     if (isEmpty) {
-      bg = cardColor.primary.withOpacity(0.70);
+      bg = cardColor.primary.withValues(alpha: 0.70);
       fg = Colors.transparent;
     } else if (isMarked) {
       bg = cardColor.primary;
       fg = cardColor.onPrimary;
     } else if (isDrawn) {
-      bg = cardColor.primary.withOpacity(0.35);
+      bg = cardColor.primary.withValues(alpha: 0.35);
       fg = Colors.black87;
     } else {
       bg = Colors.white;

@@ -71,7 +71,7 @@ class _SplashPageState extends State<SplashPage>
                 'Offline',
                 style: TextStyle(
                   fontSize: 14,
-                  color: colors.onPrimary.withOpacity(0.75),
+                  color: colors.onPrimary.withValues(alpha: 0.75),
                   letterSpacing: 2,
                 ),
               ),
@@ -79,7 +79,7 @@ class _SplashPageState extends State<SplashPage>
                 'Bingo 90 Argentino',
                 style: TextStyle(
                   fontSize: 14,
-                  color: colors.onPrimary.withOpacity(0.75),
+                  color: colors.onPrimary.withValues(alpha: 0.75),
                   letterSpacing: 2,
                 ),
               ),
