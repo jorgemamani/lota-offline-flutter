@@ -43,47 +43,51 @@ class _SplashPageState extends State<SplashPage>
   Widget build(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
 
-    return Scaffold(
-      backgroundColor: colors.primary,
-      body: FadeTransition(
-        opacity: _fadeAnim,
-        child: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const ImageComponent(
-                imagePath: AppAssets.lotaIcon,
-                width: 200,
-                height: 200,
-                fit: BoxFit.contain,
-              ),
-              const SizedBox(height: 10),
-              Text(
-                'LOTA',
-                style: TextStyle(
-                  fontSize: 48,
-                  fontWeight: FontWeight.w900,
-                  color: colors.onPrimary,
-                  letterSpacing: 8,
+    return PopScope(
+      // Evita que el gesto / botón físico atrás salga del splash antes del auto-navegar.
+      canPop: false,
+      child: Scaffold(
+        backgroundColor: colors.primary,
+        body: FadeTransition(
+          opacity: _fadeAnim,
+          child: Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const ImageComponent(
+                  imagePath: AppAssets.lotaIcon,
+                  width: 200,
+                  height: 200,
+                  fit: BoxFit.contain,
                 ),
-              ),
-              Text(
-                'Offline',
-                style: TextStyle(
-                  fontSize: 14,
-                  color: colors.onPrimary.withValues(alpha: 0.75),
-                  letterSpacing: 2,
+                const SizedBox(height: 10),
+                Text(
+                  'LOTA',
+                  style: TextStyle(
+                    fontSize: 48,
+                    fontWeight: FontWeight.w900,
+                    color: colors.onPrimary,
+                    letterSpacing: 8,
+                  ),
                 ),
-              ),
-              Text(
-                'Bingo 90 Argentino',
-                style: TextStyle(
-                  fontSize: 14,
-                  color: colors.onPrimary.withValues(alpha: 0.75),
-                  letterSpacing: 2,
+                Text(
+                  'Offline',
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: colors.onPrimary.withValues(alpha: 0.75),
+                    letterSpacing: 2,
+                  ),
                 ),
-              ),
-            ],
+                Text(
+                  'Bingo 90 Argentino',
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: colors.onPrimary.withValues(alpha: 0.75),
+                    letterSpacing: 2,
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),

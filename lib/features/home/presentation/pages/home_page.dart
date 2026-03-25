@@ -21,72 +21,76 @@ class HomePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    return Scaffold(
-      body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 24),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const SizedBox(height: 48),
-              _Header(),
-              const SizedBox(height: 15),
-              // ── Tarjeta de partida guardada ──────────────────────────
-              BlocBuilder<SessionCubit, SessionState>(
-                builder: (context, sessionState) {
-                  if (sessionState.isLoading || !sessionState.hasSession) {
-                    return const SizedBox.shrink();
-                  }
-                  return Padding(
-                    padding: const EdgeInsets.only(bottom: 15),
-                    child: _SessionRecoveryCard(
-                      session: sessionState.session!,
-                      onResume: () =>
-                          _resumeSession(context, sessionState.session!),
-                      onDismiss: () => _confirmDismiss(context),
-                    ),
-                  );
-                },
-              ),
-              // ────────────────────────────────────────────────────────
-              const SizedBox(height: 15),
-              Text(
-                '¿Cómo querés jugar?',
-                style: theme.textTheme.titleMedium?.copyWith(
-                  color: theme.colorScheme.onSurfaceVariant,
+    return PopScope(
+      // Evita que el gesto / botón físico atrás cierre la app o salga del home.
+      canPop: false,
+      child: Scaffold(
+        body: SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 24),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const SizedBox(height: 48),
+                _Header(),
+                const SizedBox(height: 15),
+                // ── Tarjeta de partida guardada ──────────────────────────
+                BlocBuilder<SessionCubit, SessionState>(
+                  builder: (context, sessionState) {
+                    if (sessionState.isLoading || !sessionState.hasSession) {
+                      return const SizedBox.shrink();
+                    }
+                    return Padding(
+                      padding: const EdgeInsets.only(bottom: 15),
+                      child: _SessionRecoveryCard(
+                        session: sessionState.session!,
+                        onResume: () =>
+                            _resumeSession(context, sessionState.session!),
+                        onDismiss: () => _confirmDismiss(context),
+                      ),
+                    );
+                  },
                 ),
-              ),
-              const SizedBox(height: 20),
-              Expanded(
-                child: ListView(
-                  children: [
-                    _GameModeCard(
-                      mode: GameMode.markOnly,
-                      icon: Icons.edit_note_rounded,
-                      color: AppColors.gameModeMarkOnly,
-                      onTap: () =>
-                          _goToCartonSelect(context, GameMode.markOnly),
-                    ),
-                    const SizedBox(height: 16),
-                    _GameModeCard(
-                      mode: GameMode.bolilleroOnly,
-                      icon: Icons.casino_rounded,
-                      color: AppColors.gameModeBolillero,
-                      onTap: () => context.push(RouteNames.bolillero),
-                    ),
-                    const SizedBox(height: 16),
-                    _GameModeCard(
-                      mode: GameMode.combined,
-                      icon: Icons.join_full_rounded,
-                      color: AppColors.gameModeCombined,
-                      onTap: () =>
-                          _goToCartonSelect(context, GameMode.combined),
-                    ),
-                  ],
+                // ────────────────────────────────────────────────────────
+                const SizedBox(height: 15),
+                Text(
+                  '¿Cómo querés jugar?',
+                  style: theme.textTheme.titleMedium?.copyWith(
+                    color: theme.colorScheme.onSurfaceVariant,
+                  ),
                 ),
-              ),
-              const SizedBox(height: 24),
-            ],
+                const SizedBox(height: 20),
+                Expanded(
+                  child: ListView(
+                    children: [
+                      _GameModeCard(
+                        mode: GameMode.markOnly,
+                        icon: Icons.edit_note_rounded,
+                        color: AppColors.gameModeMarkOnly,
+                        onTap: () =>
+                            _goToCartonSelect(context, GameMode.markOnly),
+                      ),
+                      const SizedBox(height: 16),
+                      _GameModeCard(
+                        mode: GameMode.bolilleroOnly,
+                        icon: Icons.casino_rounded,
+                        color: AppColors.gameModeBolillero,
+                        onTap: () => context.push(RouteNames.bolillero),
+                      ),
+                      const SizedBox(height: 16),
+                      _GameModeCard(
+                        mode: GameMode.combined,
+                        icon: Icons.join_full_rounded,
+                        color: AppColors.gameModeCombined,
+                        onTap: () =>
+                            _goToCartonSelect(context, GameMode.combined),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 24),
+              ],
+            ),
           ),
         ),
       ),
@@ -300,7 +304,8 @@ class _SessionRecoveryCard extends StatelessWidget {
     return switch (session.mode) {
       GameMode.bolilleroOnly =>
         '$drawn número${drawn == 1 ? '' : 's'} sorteado${drawn == 1 ? '' : 's'}',
-      GameMode.markOnly => '${session.cartones.length} cartón${session.cartones.length == 1 ? '' : 'es'}',
+      GameMode.markOnly =>
+        '${session.cartones.length} cartón${session.cartones.length == 1 ? '' : 'es'}',
       GameMode.combined =>
         '$drawn número${drawn == 1 ? '' : 's'} sorteado${drawn == 1 ? '' : 's'} · ${session.cartones.length} cartón${session.cartones.length == 1 ? '' : 'es'}',
     };
