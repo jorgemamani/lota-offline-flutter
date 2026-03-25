@@ -16,6 +16,7 @@ class HomePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return Scaffold(
       body: SafeArea(
         child: Padding(
@@ -25,7 +26,15 @@ class HomePage extends StatelessWidget {
             children: [
               const SizedBox(height: 48),
               _Header(),
-              const SizedBox(height: 40),
+              const SizedBox(height: 15),
+              const SizedBox(height: 15),
+              Text(
+                '¿Cómo querés jugar?',
+                style: theme.textTheme.titleMedium?.copyWith(
+                  color: theme.colorScheme.onSurfaceVariant,
+                ),
+              ),
+              const SizedBox(height: 20),
               Expanded(
                 child: ListView(
                   children: [
@@ -98,12 +107,6 @@ class _Header extends StatelessWidget {
           ],
         ),
         const SizedBox(height: 4),
-        Text(
-          '¿Cómo querés jugar?',
-          style: theme.textTheme.titleMedium?.copyWith(
-            color: theme.colorScheme.onSurfaceVariant,
-          ),
-        ),
       ],
     );
   }
@@ -173,7 +176,9 @@ class _ThemeButton extends StatelessWidget {
         duration: const Duration(milliseconds: 200),
         curve: Curves.easeInOut,
         decoration: BoxDecoration(
-          color: selected ? theme.colorScheme.primaryContainer : Colors.transparent,
+          color: selected
+              ? theme.colorScheme.primaryContainer
+              : Colors.transparent,
           borderRadius: BorderRadius.circular(10),
         ),
         child: InkWell(
