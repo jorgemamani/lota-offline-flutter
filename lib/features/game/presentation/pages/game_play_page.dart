@@ -28,10 +28,62 @@ class GamePlayArgs {
   final Map<String, LotaCardColor> cardColors;
 }
 
-class GamePlayPage extends StatelessWidget {
+class GamePlayPage extends StatefulWidget {
   const GamePlayPage({super.key, required this.args});
 
   final GamePlayArgs args;
+
+  @override
+  State<GamePlayPage> createState() => _GamePlayPageState();
+}
+
+class _GamePlayPageState extends State<GamePlayPage>
+    with SingleTickerProviderStateMixin {
+  GamePlayArgs get args => widget.args;
+
+  late final AnimationController _pulseCtrl;
+  bool _showBolilleroHint = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _pulseCtrl = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 650),
+    );
+
+    if (args.mode == GameMode.combined) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
+        // Arranca el pulso inmediatamente para llamar la atención al botón.
+        setState(() => _showBolilleroHint = true);
+        _pulseCtrl.repeat(reverse: true);
+
+        // Abre el sheet suavemente después de 1 segundo.
+        Future.delayed(const Duration(seconds: 1), () {
+          if (mounted) _showBolilleroModal(context);
+        });
+
+        // Detiene el pulso a los 10 segundos (el sheet ya estará abierto).
+        Future.delayed(const Duration(seconds: 10), () {
+          if (mounted) _stopBolilleroHint();
+        });
+      });
+    }
+  }
+
+  @override
+  void dispose() {
+    _pulseCtrl.dispose();
+    super.dispose();
+  }
+
+  void _stopBolilleroHint() {
+    if (_showBolilleroHint) {
+      setState(() => _showBolilleroHint = false);
+      _pulseCtrl.stop();
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -55,21 +107,27 @@ class GamePlayPage extends StatelessWidget {
                         : state.drawnNumbers.last,
                     _ => null,
                   };
-                  return Stack(
+                  final button = Stack(
                     alignment: Alignment.center,
                     clipBehavior: Clip.none,
                     children: [
                       IconButton(
                         icon: const Icon(Icons.casino_rounded),
                         tooltip: 'Bolillero',
-                        onPressed: () => _showBolilleroModal(context),
+                        onPressed: () {
+                          _stopBolilleroHint();
+                          _showBolilleroModal(context);
+                        },
                       ),
                       if (lastNum != null)
                         Positioned(
                           top: 8,
                           right: 6,
                           child: GestureDetector(
-                            onTap: () => _showBolilleroModal(context),
+                            onTap: () {
+                              _stopBolilleroHint();
+                              _showBolilleroModal(context);
+                            },
                             child: Container(
                               padding: const EdgeInsets.symmetric(
                                   horizontal: 5, vertical: 1),
@@ -90,6 +148,23 @@ class GamePlayPage extends StatelessWidget {
                           ),
                         ),
                     ],
+                  );
+
+                  if (!_showBolilleroHint) return button;
+
+                  return AnimatedBuilder(
+                    animation: _pulseCtrl,
+                    builder: (context, child) => Container(
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: Theme.of(context)
+                            .colorScheme
+                            .primary
+                            .withValues(alpha: _pulseCtrl.value * 0.22),
+                      ),
+                      child: child,
+                    ),
+                    child: button,
                   );
                 },
               ),
