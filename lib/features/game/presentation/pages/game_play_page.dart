@@ -5,6 +5,8 @@ import '../../../../shared/constants/app_colors.dart';
 import '../../../../shared/constants/lota_card_colors.dart';
 import '../../../../shared/managers/alert_manager.dart';
 import '../../../../shared/widgets/loading_indicator.dart';
+import '../../domain/models/favorite_carton.dart';
+import '../cubit/favorites_cubit.dart';
 import '../../../bolillero/presentation/widgets/bolillero_widget.dart';
 import '../../domain/models/game_mode.dart';
 import '../../domain/models/game_result.dart';
@@ -91,6 +93,43 @@ class GamePlayPage extends StatelessWidget {
                   );
                 },
               ),
+            // Botón limpiar marcas / reiniciar
+            BlocBuilder<GameBloc, GameState>(
+              builder: (context, state) {
+                if (state is GameIdle) return const SizedBox.shrink();
+                final isCombined = args.mode == GameMode.combined;
+                return IconButton(
+                  icon: const Icon(Icons.restart_alt_rounded),
+                  tooltip: isCombined ? 'Reiniciar juego' : 'Limpiar marcas',
+                  onPressed: () => AlertManager.showConfirmSheet(
+                    title:
+                        isCombined ? 'Reiniciar juego' : 'Limpiar marcas',
+                    description: isCombined
+                        ? 'Se borrarán las marcas y el bolillero comenzará de cero.'
+                        : 'Se borrarán todas las marcas del cartón.',
+                    options: [
+                      SheetOption(
+                        label: isCombined ? 'Reiniciar' : 'Limpiar',
+                        onTap: () {
+                          context
+                              .read<GameBloc>()
+                              .add(const GameReset());
+                          context.read<GameBloc>().add(GameStarted(
+                                mode: args.mode,
+                                cartones: args.cartones,
+                              ));
+                        },
+                      ),
+                      SheetOption(
+                        label: 'Cancelar',
+                        style: SheetOptionStyle.outlined,
+                        onTap: () {},
+                      ),
+                    ],
+                  ),
+                );
+              },
+            ),
             // Ronda actual (visible en curso y al terminar)
             BlocBuilder<GameBloc, GameState>(
               builder: (context, state) {
@@ -137,7 +176,6 @@ class GamePlayPage extends StatelessWidget {
               if (state is GameInProgress) {
                 return _GameBody(
                   state: state,
-                  mode: args.mode,
                   cardColors: args.cardColors,
                 );
               }
@@ -155,7 +193,6 @@ class GamePlayPage extends StatelessWidget {
                 );
                 return _GameBody(
                   state: frozen,
-                  mode: state.mode,
                   cardColors: args.cardColors,
                 );
               }
@@ -219,12 +256,10 @@ class GamePlayPage extends StatelessWidget {
 class _GameBody extends StatelessWidget {
   const _GameBody({
     required this.state,
-    required this.mode,
     required this.cardColors,
   });
 
   final GameInProgress state;
-  final GameMode mode;
   final Map<String, LotaCardColor> cardColors;
 
   @override
@@ -271,8 +306,8 @@ class _GameBody extends StatelessWidget {
                     NumberToggled(cartonId: carton.id, number: number),
                   ),
             ),
-            const SizedBox(height: 8),
-            _PrizeButtons(cartonId: carton.id, state: state),
+            const SizedBox(height: 6),
+            _CartonActions(carton: carton, cardColor: cardColor),
           ],
         );
       },
@@ -280,67 +315,70 @@ class _GameBody extends StatelessWidget {
   }
 }
 
-class _PrizeButtons extends StatelessWidget {
-  const _PrizeButtons({required this.cartonId, required this.state});
+// ── Acciones por cartón ──────────────────────────────────────────────────────
 
-  final String cartonId;
-  final GameInProgress state;
+/// Barra de acciones debajo de cada cartón.
+///
+/// Diseñada para escalar: cada acción nueva (QR, compartir, etc.)
+/// se agrega como un [TextButton.icon] más en el [Row].
+class _CartonActions extends StatelessWidget {
+  const _CartonActions({required this.carton, required this.cardColor});
 
-  bool get _lineaClaimed => state.results
-      .any((r) => r.cartonId == cartonId && r.prize == PrizeType.linea);
-
-  bool get _lotaClaimed => state.results
-      .any((r) => r.cartonId == cartonId && r.prize == PrizeType.lota);
+  final LotaCardModel carton;
+  final LotaCardColor? cardColor;
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      children: [
-        if (!_lineaClaimed)
-          Expanded(
-            child: OutlinedButton.icon(
-              onPressed: () =>
-                  context.read<GameBloc>().add(LinePrizeClaimed(cartonId)),
-              icon: const Icon(Icons.horizontal_rule_rounded, size: 18),
-              label: const Text('Línea'),
-              style: OutlinedButton.styleFrom(
+    final contentId = FavoriteCarton.idFromGrid(carton.card);
+    final colorIndex = cardColor == null
+        ? 0
+        : LotaCardColors.all
+            .indexWhere((c) => c.primary == cardColor!.primary);
+
+    return BlocBuilder<FavoritesCubit, FavoritesState>(
+      builder: (context, favState) {
+        final isFav = favState.isFavorite(contentId);
+        final favoriteColor =
+            isFav ? AppColors.favorite : Theme.of(context).colorScheme.outline;
+
+        return Row(
+          children: [
+            // ── Favorito ────────────────────────────────────────────────────
+            TextButton.icon(
+              onPressed: () {
+                if (isFav) {
+                  AlertManager.showSnackBar(
+                    message:
+                        'Para quitar de favoritos, andá a la sección Favoritos.',
+                  );
+                } else {
+                  context.read<FavoritesCubit>().toggle(
+                        grid: carton.card,
+                        colorIndex: colorIndex < 0 ? 0 : colorIndex,
+                      );
+                  AlertManager.showSnackBarSuccess(
+                    message: 'Cartón guardado en favoritos.',
+                  );
+                }
+              },
+              icon: Icon(
+                isFav ? Icons.star_rounded : Icons.star_outline_rounded,
+                size: 20,
+                color: favoriteColor,
+              ),
+              label: Text(isFav ? 'En favoritos' : 'Guardar'),
+              style: TextButton.styleFrom(
+                foregroundColor: favoriteColor,
                 visualDensity: VisualDensity.compact,
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                textStyle: Theme.of(context).textTheme.labelMedium,
               ),
             ),
-          )
-        else
-          const Expanded(
-            child: Chip(
-              label: Text('✓ Línea'),
-              backgroundColor: AppColors.prizeLineaBackground,
-              side: BorderSide(color: AppColors.prizeLineaBorder),
-              labelStyle: TextStyle(color: AppColors.prizeLineaLabel),
-            ),
-          ),
-        const SizedBox(width: 8),
-        if (!_lotaClaimed)
-          Expanded(
-            child: FilledButton.icon(
-              onPressed: () =>
-                  context.read<GameBloc>().add(LotaPrizeClaimed(cartonId)),
-              icon: const Icon(Icons.star_rounded, size: 18),
-              label: const Text('¡Lota!'),
-              style: FilledButton.styleFrom(
-                visualDensity: VisualDensity.compact,
-                backgroundColor: AppColors.prizeLotaButton,
-              ),
-            ),
-          )
-        else
-          const Expanded(
-            child: Chip(
-              label: Text('✓ Lota'),
-              backgroundColor: AppColors.prizeLotaBackground,
-              side: BorderSide(color: AppColors.prizeLotaBorder),
-              labelStyle: TextStyle(color: AppColors.prizeLotaLabel),
-            ),
-          ),
-      ],
+            // ── Espacio para más acciones (QR, compartir, etc.) ─────────────
+          ],
+        );
+      },
     );
   }
 }
