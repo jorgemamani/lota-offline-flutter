@@ -21,7 +21,7 @@ enum GameMode {
     return switch (this) {
       GameMode.markOnly => 'Seleccioná tus cartones y marcalos a mano.',
       GameMode.bolilleroOnly => 'Sorteo de números. Ideal para ser el cantador.',
-      GameMode.combined => 'Sorteo automático + marcado de cartones en un solo lugar.',
+      GameMode.combined => 'Sos el cantador: sorteás y los cartones se marcan solos.',
     };
   }
 }

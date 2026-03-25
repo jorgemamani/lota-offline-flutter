@@ -40,6 +40,9 @@ abstract final class AlertManager {
   static GlobalKey<ScaffoldMessengerState>? _messengerKey;
   static GlobalKey<NavigatorState>? _navigatorKey;
 
+  /// Entradas activas del overlay superior (notificaciones de premio).
+  static final List<OverlayEntry> _topEntries = [];
+
   // ── Setup ────────────────────────────────────────────────────────────────
 
   /// Registra las claves globales necesarias para operar sin [BuildContext].
@@ -150,6 +153,58 @@ abstract final class AlertManager {
           duration: duration,
           fontSize: fontSize,
           action: action);
+
+  // ── Notificación superior (overlay) ──────────────────────────────────────
+
+  /// Muestra un SnackBar flotante en la parte SUPERIOR de la pantalla.
+  ///
+  /// A diferencia del [SnackBar] estándar, se renderiza directamente en el
+  /// overlay del navigator, por lo que aparece por encima de bottom sheets
+  /// y modales. Útil para notificaciones de premios durante el juego.
+  static void showTopSnackBar({
+    required String message,
+    SnackBarTypeEnum type = SnackBarTypeEnum.info,
+    Duration? duration,
+  }) {
+    final overlay = _navigatorKey?.currentState?.overlay;
+    if (overlay == null) return;
+
+    _clearTopSnackBars();
+
+    late OverlayEntry entry;
+    entry = OverlayEntry(
+      builder: (context) => _TopNotificationOverlay(
+        message: message,
+        type: type,
+        duration: duration ?? type.defaultDuration,
+        onComplete: () {
+          entry.remove();
+          _topEntries.remove(entry);
+        },
+      ),
+    );
+
+    _topEntries.add(entry);
+    overlay.insert(entry);
+  }
+
+  /// Atajo para [showTopSnackBar] con tipo [SnackBarTypeEnum.success].
+  static void showTopSnackBarSuccess({
+    required String message,
+    Duration? duration,
+  }) =>
+      showTopSnackBar(
+        message: message,
+        type: SnackBarTypeEnum.success,
+        duration: duration,
+      );
+
+  static void _clearTopSnackBars() {
+    for (final e in _topEntries) {
+      e.remove();
+    }
+    _topEntries.clear();
+  }
 
   // ── Toast ─────────────────────────────────────────────────────────────────
   // TODO: implementar con paquete de Toast (ej. fluttertoast o toastification)
@@ -304,6 +359,113 @@ abstract final class AlertManager {
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
       builder: (_) => child,
+    );
+  }
+}
+
+// ── Widget privado: notificación superior animada ─────────────────────────────
+
+class _TopNotificationOverlay extends StatefulWidget {
+  const _TopNotificationOverlay({
+    required this.message,
+    required this.type,
+    required this.duration,
+    required this.onComplete,
+  });
+
+  final String message;
+  final SnackBarTypeEnum type;
+  final Duration duration;
+  final VoidCallback onComplete;
+
+  @override
+  State<_TopNotificationOverlay> createState() =>
+      _TopNotificationOverlayState();
+}
+
+class _TopNotificationOverlayState extends State<_TopNotificationOverlay>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _controller;
+  late final Animation<Offset> _slide;
+  late final Animation<double> _fade;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 280),
+    );
+    _slide = Tween<Offset>(
+      begin: const Offset(0, -1),
+      end: Offset.zero,
+    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeOut));
+    _fade = Tween<double>(begin: 0, end: 1)
+        .animate(CurvedAnimation(parent: _controller, curve: Curves.easeOut));
+
+    _controller.forward().then((_) async {
+      await Future<void>.delayed(widget.duration);
+      if (mounted) {
+        await _controller.reverse();
+        widget.onComplete();
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final topPadding = MediaQuery.paddingOf(context).top;
+    return Positioned(
+      top: topPadding + 12,
+      left: 16,
+      right: 16,
+      child: SlideTransition(
+        position: _slide,
+        child: FadeTransition(
+          opacity: _fade,
+          child: Material(
+            color: Colors.transparent,
+            child: Container(
+              padding:
+                  const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              decoration: BoxDecoration(
+                color: widget.type.backgroundColor,
+                borderRadius: BorderRadius.circular(12),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.25),
+                    blurRadius: 10,
+                    offset: const Offset(0, 3),
+                  ),
+                ],
+              ),
+              child: Row(
+                children: [
+                  Icon(widget.type.icon,
+                      color: widget.type.foregroundColor, size: 20),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Text(
+                      widget.message,
+                      style: TextStyle(
+                        color: widget.type.foregroundColor,
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
     );
   }
 }

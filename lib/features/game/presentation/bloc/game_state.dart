@@ -21,6 +21,8 @@ final class GameInProgress extends GameState {
     required this.availableNumbers,
     this.lastDrawnNumber,
     this.results = const [],
+    this.newlyAchievedPrizes = const [],
+    this.drawingBlocked = false,
   });
 
   final GameMode mode;
@@ -37,8 +39,20 @@ final class GameInProgress extends GameState {
   /// Último número salido.
   final int? lastDrawnNumber;
 
-  /// Premios obtenidos hasta el momento.
+  /// Premios acumulados durante toda la partida.
   final List<GameResult> results;
+
+  /// Premios recién detectados en el último marcado.
+  ///
+  /// Se resetea a [] en cada evento que no sea [NumberToggled].
+  /// El [BlocListener] en la UI lo usa para mostrar SnackBars.
+  final List<GameResult> newlyAchievedPrizes;
+
+  /// true mientras el botón "Sacar número" está bloqueado por un premio.
+  ///
+  /// Solo aplica en [GameMode.combined]. Se activa al detectar un premio y
+  /// se desactiva automáticamente al desaparecer la notificación superior.
+  final bool drawingBlocked;
 
   /// Ronda actual = cantidad de bolillas sacadas.
   int get round => drawnNumbers.length;
@@ -55,6 +69,8 @@ final class GameInProgress extends GameState {
     List<int>? availableNumbers,
     int? lastDrawnNumber,
     List<GameResult>? results,
+    List<GameResult>? newlyAchievedPrizes,
+    bool? drawingBlocked,
   }) =>
       GameInProgress(
         mode: mode,
@@ -63,6 +79,9 @@ final class GameInProgress extends GameState {
         availableNumbers: availableNumbers ?? this.availableNumbers,
         lastDrawnNumber: lastDrawnNumber ?? this.lastDrawnNumber,
         results: results ?? this.results,
+        // Se resetea a [] si no se pasa explícitamente.
+        newlyAchievedPrizes: newlyAchievedPrizes ?? const [],
+        drawingBlocked: drawingBlocked ?? this.drawingBlocked,
       );
 }
 

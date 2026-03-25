@@ -1,11 +1,17 @@
 import 'package:equatable/equatable.dart';
 
 /// Tipo de premio obtenido en la partida.
+///
+/// Ordenados de menor a mayor: si se logran varios en un mismo marcado,
+/// el SnackBar que queda visible es el de mayor importancia (lota).
 enum PrizeType {
-  /// Primera fila completa marcada.
+  /// Primera fila con al menos 4 números marcados.
+  cuaterno,
+
+  /// Primera fila completamente marcada (5 números).
   linea,
 
-  /// Cartón completo (los 15 números marcados).
+  /// Primer sub-cartón con sus 15 números marcados (filas 0-2, 3-5 o 6-8).
   lota,
 }
 

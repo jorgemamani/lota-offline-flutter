@@ -50,6 +50,11 @@ final class LotaPrizeClaimed extends GameEvent {
   final String cartonId;
 }
 
+/// Desbloquea el botón "Sacar número" tras la pausa de celebración de un premio.
+final class DrawUnblocked extends GameEvent {
+  const DrawUnblocked();
+}
+
 /// Reinicia la partida completamente (vuelve a [GameIdle]).
 final class GameReset extends GameEvent {
   const GameReset();

@@ -157,6 +157,35 @@ class GamePlayPage extends StatelessWidget {
         ),
         body: BlocListener<GameBloc, GameState>(
           listener: (context, state) {
+            // Premios detectados automáticamente al marcar.
+            if (state is GameInProgress &&
+                state.newlyAchievedPrizes.isNotEmpty) {
+              final cartones = state.cartones;
+              for (final result in state.newlyAchievedPrizes) {
+                final idx =
+                    cartones.indexWhere((c) => c.id == result.cartonId);
+                final suffix =
+                    cartones.length > 1 && idx >= 0 ? ' — Cartón ${idx + 1}' : '';
+                switch (result.prize) {
+                  case PrizeType.cuaterno:
+                    AlertManager.showTopSnackBarSuccess(
+                      message: '¡Cuaterno!$suffix',
+                      duration: const Duration(seconds: 4),
+                    );
+                  case PrizeType.linea:
+                    AlertManager.showTopSnackBarSuccess(
+                      message: '¡Línea!$suffix',
+                      duration: const Duration(seconds: 4),
+                    );
+                  case PrizeType.lota:
+                    AlertManager.showTopSnackBarSuccess(
+                      message: '¡LOTA!$suffix',
+                      duration: const Duration(seconds: 4),
+                    );
+                }
+              }
+            }
+
             if (state is! GameOver) return;
             final hasLota =
                 state.results.any((r) => r.prize == PrizeType.lota);

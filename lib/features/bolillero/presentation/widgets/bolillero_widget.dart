@@ -26,8 +26,9 @@ class BolilleroWidget extends StatelessWidget {
             state.drawnNumbers.isEmpty ? null : state.drawnNumbers.last,
           _ => null,
         };
-        final canDraw =
-            state is GameInProgress && state.availableNumbers.isNotEmpty;
+        final canDraw = state is GameInProgress &&
+            state.availableNumbers.isNotEmpty &&
+            !state.drawingBlocked;
 
         return Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
