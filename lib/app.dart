@@ -1,3 +1,4 @@
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
@@ -5,6 +6,8 @@ import 'package:google_fonts/google_fonts.dart';
 
 import 'dependency_injection.dart';
 import 'shared/constants/app_colors.dart';
+import 'shared/constants/breakpoints.dart';
+import 'shared/extensions/build_context_extensions.dart';
 import 'features/game/presentation/bloc/game_bloc.dart';
 import 'features/game/presentation/cubit/favorites_cubit.dart';
 import 'features/game/presentation/cubit/session_cubit.dart';
@@ -30,6 +33,10 @@ class LotaApp extends StatelessWidget {
       navigatorKey: rootNavigatorKey,
     );
 
+    // En web con pantalla ancha, centra la app en un frame de ancho fijo
+    // para preservar la experiencia móvil (≈ 1/3 del ancho de escritorio).
+    final frameWidth = context.isWeb ? Breakpoints.mobileFrame : null;
+
     return MultiBlocProvider(
       providers: [
         BlocProvider(create: (_) => sl<GameBloc>()),
@@ -39,7 +46,7 @@ class LotaApp extends StatelessWidget {
       ],
       child: BlocBuilder<ThemeCubit, ThemeMode>(
         builder: (context, themeMode) {
-          return MaterialApp.router(
+          final app = MaterialApp.router(
             title: 'Lota',
             debugShowCheckedModeBanner: false,
             scaffoldMessengerKey: _scaffoldMessengerKey,
@@ -47,22 +54,37 @@ class LotaApp extends StatelessWidget {
             darkTheme: _buildTheme(Brightness.dark),
             themeMode: themeMode,
             routerConfig: appRouter,
+            scrollBehavior: _WebScrollBehavior(),
             localizationsDelegates: const [
               GlobalMaterialLocalizations.delegate,
               GlobalWidgetsLocalizations.delegate,
               GlobalCupertinoLocalizations.delegate,
             ],
-            supportedLocales: const [
-              Locale('es'),
-            ],
+            supportedLocales: const [Locale('es')],
             locale: const Locale('es'),
+          );
+
+          if (frameWidth == null) return app;
+
+          // Web: fondo con el color de la app, frame centrado
+          return Container(
+            color: _buildTheme(themeMode == ThemeMode.dark
+                    ? Brightness.dark
+                    : Brightness.light)
+                .colorScheme
+                .surface,
+            alignment: Alignment.center,
+            child: SizedBox(
+              width: frameWidth,
+              child: app,
+            ),
           );
         },
       ),
     );
   }
 
-  ThemeData _buildTheme(Brightness brightness) {
+  static ThemeData _buildTheme(Brightness brightness) {
     final colorScheme = ColorScheme.fromSeed(
       seedColor: AppColors.primary,
       brightness: brightness,
@@ -91,4 +113,16 @@ class LotaApp extends StatelessWidget {
       ),
     );
   }
+}
+
+/// Habilita scroll con mouse (drag) en web además del scroll con rueda.
+///
+/// Por defecto Flutter web solo responde al scroll con rueda; esto agrega
+/// soporte para arrastrar con el mouse igual que en un dispositivo táctil.
+class _WebScrollBehavior extends MaterialScrollBehavior {
+  @override
+  Set<PointerDeviceKind> get dragDevices => {
+        PointerDeviceKind.touch,
+        PointerDeviceKind.mouse,
+      };
 }
