@@ -63,11 +63,6 @@ class _GamePlayPageState extends State<GamePlayPage>
         Future.delayed(const Duration(seconds: 1), () {
           if (mounted) _showBolilleroModal(context);
         });
-
-        // Detiene el pulso a los 10 segundos (el sheet ya estará abierto).
-        Future.delayed(const Duration(seconds: 10), () {
-          if (mounted) _stopBolilleroHint();
-        });
       });
     }
   }
