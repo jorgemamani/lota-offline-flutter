@@ -85,11 +85,95 @@ class _GamePlayPageState extends State<GamePlayPage>
     }
   }
 
+  // ── Navegación con confirmación ───────────────────────────────────
+
+  void _handlePop(BuildContext context) {
+    final gameState = context.read<GameBloc>().state;
+    final favState = context.read<FavoritesCubit>().state;
+
+    if (args.mode == GameMode.combined) {
+      final drawnCount = switch (gameState) {
+        GameInProgress() => gameState.drawnNumbers.length,
+        GameOver() => gameState.drawnNumbers.length,
+        _ => 0,
+      };
+      if (drawnCount > 0) {
+        _showExitConfirm(
+          context,
+          title: 'Partida en curso',
+          description:
+              'Hay $drawnCount número${drawnCount == 1 ? '' : 's'} sorteado${drawnCount == 1 ? '' : 's'}. '
+              'Si salís se perderá el progreso.',
+        );
+        return;
+      }
+    } else {
+      // markOnly: verificar si hay celdas marcadas
+      final hasMarks = gameState is GameInProgress &&
+          gameState.cartones.any((c) => c.markedCount > 0);
+      if (hasMarks) {
+        _showExitConfirm(
+          context,
+          title: 'Tenés números marcados',
+          description:
+              'Si salís perderás las marcas realizadas en los cartones.',
+        );
+        return;
+      }
+    }
+
+    // Ambos modos: verificar cartones no guardados como favoritos
+    final hasUnsaved = args.cartones.any(
+      (c) => !favState.isFavorite(FavoriteCarton.idFromGrid(c.card)),
+    );
+    if (hasUnsaved) {
+      _showExitConfirm(
+        context,
+        title: 'Cartones sin guardar',
+        description:
+            'Los cartones se generan al azar cada vez. '
+            'Si salís sin guardarlos no los vas a encontrar de nuevo.',
+      );
+      return;
+    }
+
+    // Todo guardado / sin progreso: salir libremente
+    context.read<GameBloc>().add(const GameReset());
+    Navigator.of(context).pop();
+  }
+
+  void _showExitConfirm(
+    BuildContext context, {
+    required String title,
+    required String description,
+  }) {
+    AlertManager.showConfirmSheet(
+      title: title,
+      description: description,
+      options: [
+        SheetOption(
+          label: 'Salir igual',
+          isDestructive: true,
+          onTap: () {
+            context.read<GameBloc>().add(const GameReset());
+            Navigator.of(context).pop();
+          },
+        ),
+        SheetOption(
+          label: 'Quedarme',
+          style: SheetOptionStyle.outlined,
+          onTap: () {},
+        ),
+      ],
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return PopScope(
+      canPop: false,
       onPopInvokedWithResult: (didPop, _) {
-        if (didPop) context.read<GameBloc>().add(const GameReset());
+        if (!didPop) _handlePop(context);
       },
       child: Scaffold(
         appBar: AppBar(

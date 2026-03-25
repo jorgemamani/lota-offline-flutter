@@ -29,11 +29,47 @@ class _BolilleroPageState extends State<BolilleroPage> {
     });
   }
 
+  void _handlePop(BuildContext context) {
+    final state = context.read<GameBloc>().state;
+    final hasNumbers = (state is GameInProgress &&
+            state.drawnNumbers.isNotEmpty) ||
+        state is GameOver;
+
+    if (!hasNumbers) {
+      context.read<GameBloc>().add(const GameReset());
+      Navigator.of(context).pop();
+      return;
+    }
+
+    AlertManager.showConfirmSheet(
+      title: 'Hay números sorteados',
+      description:
+          'Si salís se perderá el progreso del bolillero.',
+      options: [
+        SheetOption(
+          label: 'Salir igual',
+          isDestructive: true,
+          onTap: () {
+            context.read<GameBloc>().add(const GameReset());
+            Navigator.of(context).pop();
+          },
+        ),
+        SheetOption(
+          label: 'Quedarme',
+          style: SheetOptionStyle.outlined,
+          onTap: () {},
+        ),
+      ],
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return PopScope(
-      onPopInvokedWithResult: (_, __) =>
-          context.read<GameBloc>().add(const GameReset()),
+      canPop: false,
+      onPopInvokedWithResult: (didPop, _) {
+        if (!didPop) _handlePop(context);
+      },
       child: Scaffold(
         appBar: AppBar(
           title: const Text('Bolillero'),

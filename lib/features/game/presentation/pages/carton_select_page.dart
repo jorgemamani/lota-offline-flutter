@@ -135,13 +135,44 @@ class _CartonSelectPageState extends State<CartonSelectPage>
     );
   }
 
+  // ── Navegación ────────────────────────────────────────────────────
+
+  void _handlePop(BuildContext context) {
+    if (_selectedCards.isEmpty) {
+      Navigator.of(context).pop();
+      return;
+    }
+    AlertManager.showConfirmSheet(
+      title: 'Tenés cartones seleccionados',
+      description:
+          'Si salís ahora perderás la selección actual.',
+      options: [
+        SheetOption(
+          label: 'Salir igual',
+          isDestructive: true,
+          onTap: () => Navigator.of(context).pop(),
+        ),
+        SheetOption(
+          label: 'Quedarme',
+          style: SheetOptionStyle.outlined,
+          onTap: () {},
+        ),
+      ],
+    );
+  }
+
   // ── Build ─────────────────────────────────────────────────────────
 
   @override
   Widget build(BuildContext context) {
     final selectedCount = _selectedCards.length;
 
-    return Scaffold(
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, _) {
+        if (!didPop) _handlePop(context);
+      },
+      child: Scaffold(
       appBar: AppBar(
         title: Text('Elegir cartones — ${widget.args.mode.label}'),
         bottom: TabBar(
@@ -211,6 +242,7 @@ class _CartonSelectPageState extends State<CartonSelectPage>
             ),
           ),
         ),
+      ),
       ),
     );
   }
