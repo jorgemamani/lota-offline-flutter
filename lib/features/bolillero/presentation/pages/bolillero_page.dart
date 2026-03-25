@@ -4,11 +4,15 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../shared/managers/alert_manager.dart';
 import '../../../game/domain/models/game_mode.dart';
 import '../../../game/domain/models/lota_card_model.dart';
+import '../../../game/domain/models/session_data.dart';
 import '../../../game/presentation/bloc/game_bloc.dart';
+import '../../../game/presentation/cubit/session_cubit.dart';
 import '../widgets/bolillero_widget.dart';
 
 /// Pantalla standalone del bolillero (modo [GameMode.bolilleroOnly]).
-/// Inicia una partida sin cartones al montar.
+///
+/// Si el [GameBloc] ya está en [GameInProgress] (resumida desde sesión guardada)
+/// no se despacha un nuevo [GameStarted].
 class BolilleroPage extends StatefulWidget {
   const BolilleroPage({super.key});
 
@@ -20,22 +24,28 @@ class _BolilleroPageState extends State<BolilleroPage> {
   @override
   void initState() {
     super.initState();
-    // Inicia el GameBloc en modo bolilleroOnly sin cartones
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<GameBloc>().add(const GameStarted(
-            mode: GameMode.bolilleroOnly,
-            cartones: <LotaCardModel>[],
-          ));
+      if (!mounted) return;
+      // Si el bloc ya fue restaurado por GameResumed desde el Home, no reiniciar.
+      if (context.read<GameBloc>().state is! GameInProgress) {
+        context.read<GameBloc>().add(const GameStarted(
+              mode: GameMode.bolilleroOnly,
+              cartones: <LotaCardModel>[],
+            ));
+      }
     });
   }
 
+  void _clearSession() => context.read<SessionCubit>().clear();
+
   void _handlePop(BuildContext context) {
     final state = context.read<GameBloc>().state;
-    final hasNumbers = (state is GameInProgress &&
-            state.drawnNumbers.isNotEmpty) ||
-        state is GameOver;
+    final hasNumbers =
+        (state is GameInProgress && state.drawnNumbers.isNotEmpty) ||
+            state is GameOver;
 
     if (!hasNumbers) {
+      _clearSession();
       context.read<GameBloc>().add(const GameReset());
       Navigator.of(context).pop();
       return;
@@ -43,13 +53,13 @@ class _BolilleroPageState extends State<BolilleroPage> {
 
     AlertManager.showConfirmSheet(
       title: 'Hay números sorteados',
-      description:
-          'Si salís se perderá el progreso del bolillero.',
+      description: 'Si salís se perderá el progreso del bolillero.',
       options: [
         SheetOption(
           label: 'Salir igual',
           isDestructive: true,
           onTap: () {
+            _clearSession();
             context.read<GameBloc>().add(const GameReset());
             Navigator.of(context).pop();
           },
@@ -105,6 +115,18 @@ class _BolilleroPageState extends State<BolilleroPage> {
                 message: 'Se sortearon los 90 números.',
               );
             }
+
+            // Guardar sesión en cada sorteo.
+            if (state is GameInProgress && state.drawnNumbers.isNotEmpty) {
+              context.read<SessionCubit>().save(
+                    SessionData(
+                      mode: GameMode.bolilleroOnly,
+                      cartones: const [],
+                      drawnNumbers: state.drawnNumbers,
+                      savedAt: DateTime.now(),
+                    ),
+                  );
+            }
           },
           child: SingleChildScrollView(
             padding: const EdgeInsets.all(20),
@@ -140,6 +162,8 @@ class _ResetButton extends StatelessWidget {
           SheetOption(
             label: 'Reiniciar',
             onTap: () {
+              // Reinicio limpia la sesión ya que los números vuelven a 0.
+              context.read<SessionCubit>().clear();
               context.read<GameBloc>().add(const GameReset());
               context.read<GameBloc>().add(const GameStarted(
                     mode: GameMode.bolilleroOnly,

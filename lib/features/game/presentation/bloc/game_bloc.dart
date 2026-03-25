@@ -14,6 +14,7 @@ part 'game_state.dart';
 class GameBloc extends Bloc<GameEvent, GameState> {
   GameBloc() : super(const GameIdle()) {
     on<GameStarted>(_onStarted);
+    on<GameResumed>(_onResumed);
     on<RandomNumberDrawn>(_onRandomNumberDrawn);
     on<ManualNumberDrawn>(_onManualNumberDrawn);
     on<NumberToggled>(_onNumberToggled);
@@ -38,6 +39,24 @@ class GameBloc extends Bloc<GameEvent, GameState> {
       cartones: event.cartones,
       drawnNumbers: const [],
       availableNumbers: available,
+    ));
+  }
+
+  void _onResumed(GameResumed event, Emitter<GameState> emit) {
+    final drawn = event.drawnNumbers;
+    final available = List<int>.generate(90, (i) => i + 1)
+      ..removeWhere(drawn.contains)
+      ..shuffle(_random);
+
+    dev.log('GameBloc: sesión resumida — modo: ${event.mode.name}, '
+        'sorteados: ${drawn.length}, cartones: ${event.cartones.length}');
+
+    emit(GameInProgress(
+      mode: event.mode,
+      cartones: event.cartones,
+      drawnNumbers: drawn,
+      availableNumbers: available,
+      lastDrawnNumber: drawn.isNotEmpty ? drawn.last : null,
     ));
   }
 

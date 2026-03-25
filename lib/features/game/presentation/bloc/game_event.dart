@@ -55,6 +55,22 @@ final class DrawUnblocked extends GameEvent {
   const DrawUnblocked();
 }
 
+/// Reanuda una partida guardada desde una [SessionData].
+///
+/// El bloc reaplica los [drawnNumbers] y los [cartones] con su estado
+/// de marcado, generando un nuevo orden aleatorio para los disponibles.
+final class GameResumed extends GameEvent {
+  const GameResumed({
+    required this.mode,
+    required this.cartones,
+    required this.drawnNumbers,
+  });
+
+  final GameMode mode;
+  final List<LotaCardModel> cartones;
+  final List<int> drawnNumbers;
+}
+
 /// Reinicia la partida completamente (vuelve a [GameIdle]).
 final class GameReset extends GameEvent {
   const GameReset();

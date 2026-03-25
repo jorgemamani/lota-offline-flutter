@@ -7,9 +7,12 @@ import 'core/local_storage/data/local_storage_impl.dart';
 import 'core/local_storage/domain/local_storage.dart';
 import 'features/game/data/carton_manager.dart';
 import 'features/game/data/repositories/favorite_cartons_repository_impl.dart';
+import 'features/game/data/repositories/session_repository_impl.dart';
 import 'features/game/domain/repositories/favorite_cartons_repository.dart';
+import 'features/game/domain/repositories/session_repository.dart';
 import 'features/game/presentation/bloc/game_bloc.dart';
 import 'features/game/presentation/cubit/favorites_cubit.dart';
+import 'features/game/presentation/cubit/session_cubit.dart';
 import 'features/home/presentation/cubit/theme_cubit.dart';
 
 final sl = GetIt.instance;
@@ -33,6 +36,11 @@ Future<void> configureDependencies() async {
     () => FavoriteCartonsRepositoryImpl(),
   );
 
+  // ── Sesión de juego ────────────────────────────────────────────────
+  sl.registerLazySingleton<ISessionRepository>(
+    () => SessionRepositoryImpl(),
+  );
+
   // ── Dominio del juego ──────────────────────────────────────────────
   sl.registerLazySingleton<CartonManager>(CartonManager.new);
 
@@ -44,5 +52,8 @@ Future<void> configureDependencies() async {
   sl.registerLazySingleton<ThemeCubit>(ThemeCubit.new);
   sl.registerLazySingleton<FavoritesCubit>(
     () => FavoritesCubit(sl<IFavoriteCartonsRepository>()),
+  );
+  sl.registerLazySingleton<SessionCubit>(
+    () => SessionCubit(sl<ISessionRepository>()),
   );
 }

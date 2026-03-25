@@ -6,7 +6,9 @@ import '../../../../shared/constants/lota_card_colors.dart';
 import '../../../../shared/managers/alert_manager.dart';
 import '../../../../shared/widgets/loading_indicator.dart';
 import '../../domain/models/favorite_carton.dart';
+import '../../domain/models/session_data.dart';
 import '../cubit/favorites_cubit.dart';
+import '../cubit/session_cubit.dart';
 import '../../../bolillero/presentation/widgets/bolillero_widget.dart';
 import '../../domain/models/game_mode.dart';
 import '../../domain/models/game_result.dart';
@@ -78,6 +80,37 @@ class _GamePlayPageState extends State<GamePlayPage>
       setState(() => _showBolilleroHint = false);
       _pulseCtrl.stop();
     }
+  }
+
+  // ── Sesión ───────────────────────────────────────────────────────
+
+  void _clearSession() => context.read<SessionCubit>().clear();
+
+  void _saveSession(GameInProgress state) {
+    final shouldSave = args.mode == GameMode.combined
+        ? state.drawnNumbers.isNotEmpty
+        : state.cartones.any((c) => c.markedCount > 0);
+
+    if (!shouldSave) return;
+
+    final sessionCartones = state.cartones.map((carton) {
+      final color = args.cardColors[carton.id];
+      final colorIndex = color == null
+          ? 0
+          : LotaCardColors.all.indexWhere((c) => c.primary == color.primary);
+      return SessionCarton(
+        grid: carton.card,
+        cardState: carton.cardState,
+        colorIndex: colorIndex < 0 ? 0 : colorIndex,
+      );
+    }).toList();
+
+    context.read<SessionCubit>().save(SessionData(
+          mode: args.mode,
+          cartones: sessionCartones,
+          drawnNumbers: state.drawnNumbers,
+          savedAt: DateTime.now(),
+        ));
   }
 
   // ── Navegación con confirmación ───────────────────────────────────
@@ -163,6 +196,7 @@ class _GamePlayPageState extends State<GamePlayPage>
   }
 
   void _popFree(BuildContext context) {
+    _clearSession();
     context.read<GameBloc>().add(const GameReset());
     Navigator.of(context).pop();
   }
@@ -180,6 +214,7 @@ class _GamePlayPageState extends State<GamePlayPage>
           label: 'Salir igual',
           isDestructive: true,
           onTap: () {
+            _clearSession();
             context.read<GameBloc>().add(const GameReset());
             Navigator.of(context).pop();
           },
@@ -295,6 +330,7 @@ class _GamePlayPageState extends State<GamePlayPage>
                       SheetOption(
                         label: isCombined ? 'Reiniciar' : 'Limpiar',
                         onTap: () {
+                          _clearSession();
                           context
                               .read<GameBloc>()
                               .add(const GameReset());
@@ -341,6 +377,9 @@ class _GamePlayPageState extends State<GamePlayPage>
         ),
         body: BlocListener<GameBloc, GameState>(
           listener: (context, state) {
+            // Guardar sesión en cada progreso.
+            if (state is GameInProgress) _saveSession(state);
+
             // Premios detectados automáticamente al marcar.
             if (state is GameInProgress &&
                 state.newlyAchievedPrizes.isNotEmpty) {

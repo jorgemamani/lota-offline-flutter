@@ -7,6 +7,7 @@ import 'dependency_injection.dart';
 import 'shared/constants/app_colors.dart';
 import 'features/game/presentation/bloc/game_bloc.dart';
 import 'features/game/presentation/cubit/favorites_cubit.dart';
+import 'features/game/presentation/cubit/session_cubit.dart';
 import 'features/home/presentation/cubit/theme_cubit.dart';
 import 'routing/app_router.dart';
 import 'shared/managers/alert_manager.dart';
@@ -34,6 +35,7 @@ class LotaApp extends StatelessWidget {
         BlocProvider(create: (_) => sl<GameBloc>()),
         BlocProvider(create: (_) => sl<ThemeCubit>()),
         BlocProvider(create: (_) => sl<FavoritesCubit>()),
+        BlocProvider(create: (_) => sl<SessionCubit>()),
       ],
       child: BlocBuilder<ThemeCubit, ThemeMode>(
         builder: (context, themeMode) {
