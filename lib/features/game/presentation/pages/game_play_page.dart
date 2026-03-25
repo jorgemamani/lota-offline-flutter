@@ -86,53 +86,83 @@ class _GamePlayPageState extends State<GamePlayPage>
     final gameState = context.read<GameBloc>().state;
     final favState = context.read<FavoritesCubit>().state;
 
+    final hasUnsaved = args.cartones.any(
+      (c) => !favState.isFavorite(FavoriteCarton.idFromGrid(c.card)),
+    );
+
+    const unsavedMsg =
+        'Los cartones se generan al azar cada vez. '
+        'Si salís sin guardarlos no los vas a encontrar de nuevo.';
+
     if (args.mode == GameMode.combined) {
       final drawnCount = switch (gameState) {
         GameInProgress() => gameState.drawnNumbers.length,
         GameOver() => gameState.drawnNumbers.length,
         _ => 0,
       };
-      if (drawnCount > 0) {
+      final hasDrawn = drawnCount > 0;
+      final n = drawnCount;
+      final drawnMsg =
+          'Hay $n número${n == 1 ? '' : 's'} sorteado${n == 1 ? '' : 's'}. '
+          'Si salís se perderá el progreso.';
+
+      if (!hasDrawn && !hasUnsaved) {
+        _popFree(context);
+        return;
+      }
+      if (hasDrawn && hasUnsaved) {
+        _showExitConfirm(
+          context,
+          title: 'Partida en curso · Cartones sin guardar',
+          description: '$drawnMsg\n\n$unsavedMsg',
+        );
+      } else if (hasDrawn) {
         _showExitConfirm(
           context,
           title: 'Partida en curso',
-          description:
-              'Hay $drawnCount número${drawnCount == 1 ? '' : 's'} sorteado${drawnCount == 1 ? '' : 's'}. '
-              'Si salís se perderá el progreso.',
+          description: drawnMsg,
         );
-        return;
+      } else {
+        _showExitConfirm(
+          context,
+          title: 'Cartones sin guardar',
+          description: unsavedMsg,
+        );
       }
     } else {
-      // markOnly: verificar si hay celdas marcadas
+      // markOnly
       final hasMarks = gameState is GameInProgress &&
           gameState.cartones.any((c) => c.markedCount > 0);
-      if (hasMarks) {
+      const marksMsg =
+          'Si salís perderás las marcas realizadas en los cartones.';
+
+      if (!hasMarks && !hasUnsaved) {
+        _popFree(context);
+        return;
+      }
+      if (hasMarks && hasUnsaved) {
+        _showExitConfirm(
+          context,
+          title: 'Tenés números marcados · Cartones sin guardar',
+          description: '$marksMsg\n\n$unsavedMsg',
+        );
+      } else if (hasMarks) {
         _showExitConfirm(
           context,
           title: 'Tenés números marcados',
-          description:
-              'Si salís perderás las marcas realizadas en los cartones.',
+          description: marksMsg,
         );
-        return;
+      } else {
+        _showExitConfirm(
+          context,
+          title: 'Cartones sin guardar',
+          description: unsavedMsg,
+        );
       }
     }
+  }
 
-    // Ambos modos: verificar cartones no guardados como favoritos
-    final hasUnsaved = args.cartones.any(
-      (c) => !favState.isFavorite(FavoriteCarton.idFromGrid(c.card)),
-    );
-    if (hasUnsaved) {
-      _showExitConfirm(
-        context,
-        title: 'Cartones sin guardar',
-        description:
-            'Los cartones se generan al azar cada vez. '
-            'Si salís sin guardarlos no los vas a encontrar de nuevo.',
-      );
-      return;
-    }
-
-    // Todo guardado / sin progreso: salir libremente
+  void _popFree(BuildContext context) {
     context.read<GameBloc>().add(const GameReset());
     Navigator.of(context).pop();
   }
