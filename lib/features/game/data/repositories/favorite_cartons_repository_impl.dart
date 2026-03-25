@@ -32,7 +32,7 @@ class FavoriteCartonsRepositoryImpl implements IFavoriteCartonsRepository {
   Future<void> add(FavoriteCarton favorite) async {
     final all = await getAll();
     if (all.any((f) => f.id == favorite.id)) return;
-    all.add(favorite);
+    all.insert(0, favorite);
     await _persist(all);
   }
 

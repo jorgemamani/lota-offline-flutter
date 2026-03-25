@@ -92,7 +92,7 @@ class FavoritesCubit extends Cubit<FavoritesState> {
       );
       await _repository.add(fav);
       emit(state.copyWith(
-        items: [...state.items, fav],
+        items: [fav, ...state.items],
         ids: Set<String>.from(state.ids)..add(contentId),
       ));
     }
