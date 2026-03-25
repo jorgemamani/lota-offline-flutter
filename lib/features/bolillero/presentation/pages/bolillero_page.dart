@@ -38,6 +38,20 @@ class _BolilleroPageState extends State<BolilleroPage> {
 
   void _clearSession() => context.read<SessionCubit>().clear();
 
+  /// Reinicio explícito desde el botón (sheet confirmado).
+  ///
+  /// Siempre borra la sesión en disco y la tarjeta del home — también cuando
+  /// todavía no hay números sorteados en pantalla (el usuario elige reiniciar
+  /// en lugar de volver atrás, donde conservamos la sesión si no sorteó).
+  void _onConfirmReiniciarSorteo(BuildContext context) {
+    _clearSession();
+    context.read<GameBloc>().add(const GameReset());
+    context.read<GameBloc>().add(const GameStarted(
+          mode: GameMode.bolilleroOnly,
+          cartones: <LotaCardModel>[],
+        ));
+  }
+
   void _handlePop(BuildContext context) {
     final state = context.read<GameBloc>().state;
     final hasNumbers =
@@ -45,7 +59,8 @@ class _BolilleroPageState extends State<BolilleroPage> {
             state is GameOver;
 
     if (!hasNumbers) {
-      _clearSession();
+      // No borrar la sesión en disco: si había tarjeta de recuperación y el
+      // usuario entró al bolillero pero no sorteó nada, debe seguir apareciendo.
       context.read<GameBloc>().add(const GameReset());
       Navigator.of(context).pop();
       return;
@@ -137,7 +152,9 @@ class _BolilleroPageState extends State<BolilleroPage> {
                 BlocBuilder<GameBloc, GameState>(
                   builder: (context, state) {
                     if (state is GameInProgress || state is GameOver) {
-                      return _ResetButton();
+                      return _ResetButton(
+                        onConfirm: () => _onConfirmReiniciarSorteo(context),
+                      );
                     }
                     return const SizedBox.shrink();
                   },
@@ -152,6 +169,10 @@ class _BolilleroPageState extends State<BolilleroPage> {
 }
 
 class _ResetButton extends StatelessWidget {
+  const _ResetButton({required this.onConfirm});
+
+  final VoidCallback onConfirm;
+
   @override
   Widget build(BuildContext context) {
     return OutlinedButton.icon(
@@ -161,15 +182,7 @@ class _ResetButton extends StatelessWidget {
         options: [
           SheetOption(
             label: 'Reiniciar',
-            onTap: () {
-              // Reinicio limpia la sesión ya que los números vuelven a 0.
-              context.read<SessionCubit>().clear();
-              context.read<GameBloc>().add(const GameReset());
-              context.read<GameBloc>().add(const GameStarted(
-                    mode: GameMode.bolilleroOnly,
-                    cartones: <LotaCardModel>[],
-                  ));
-            },
+            onTap: onConfirm,
           ),
           SheetOption(
             label: 'Cancelar',
