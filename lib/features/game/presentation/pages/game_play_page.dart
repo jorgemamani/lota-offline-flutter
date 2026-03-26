@@ -492,7 +492,7 @@ class _GamePlayPageState extends State<GamePlayPage>
                       ),
                 ),
                 const SizedBox(height: 20),
-                const BolilleroWidget(),
+                const BolilleroWidget(showReiniciarSorteo: false),
               ],
             ),
           ),

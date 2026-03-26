@@ -1,13 +1,37 @@
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../game/presentation/bloc/game_bloc.dart';
 
 /// Widget reutilizable que muestra el bolillero.
-/// Se usa tanto en [BolilleroPage] (standalone) como en el modal
-/// dentro de [GamePlayPage] (modo combined).
+///
+/// Se usa en [BolilleroPage] (standalone) y en el sheet de [GamePlayPage]
+/// (modo combined). En combined, [showReiniciarSorteo] va en `false`.
+///
+/// [extraActionButtons]: acciones extra entre «Reiniciar sorteo» y «Sacar número»
+/// (mismo ancho, lista vertical) para futuras funciones.
+///
+/// «Reiniciar sorteo» solo se muestra si [showReiniciarSorteo] y ya hay al menos
+/// un número sorteado (no tiene sentido reiniciar con el bolillero vacío).
 class BolilleroWidget extends StatelessWidget {
-  const BolilleroWidget({super.key});
+  const BolilleroWidget({
+    super.key,
+    this.showReiniciarSorteo = true,
+    this.onReiniciarPressed,
+    this.extraActionButtons = const [],
+  });
+
+  /// Si es `false` (p. ej. juego combinado), no se muestra «Reiniciar sorteo».
+  final bool showReiniciarSorteo;
+
+  /// Debe abrir el sheet de confirmación y ejecutar el reinicio al confirmar.
+  /// Ignorado si [showReiniciarSorteo] es `false`.
+  final VoidCallback? onReiniciarPressed;
+
+  /// Acciones extra en la columna derecha, entre reiniciar y «Sacar número».
+  final List<Widget> extraActionButtons;
 
   @override
   Widget build(BuildContext context) {
@@ -34,15 +58,153 @@ class BolilleroWidget extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             _DrawnHistory(drawn: drawn),
-            const SizedBox(height: 20),
-            _LastNumberDisplay(number: last),
             const SizedBox(height: 16),
-            _DrawButton(canDraw: canDraw),
+            _BolilleroMainRow(
+              lastNumber: last,
+              canDraw: canDraw,
+              showReiniciarSorteo: showReiniciarSorteo,
+              onReiniciarPressed: onReiniciarPressed,
+              hasDrawnNumbers: drawn.isNotEmpty,
+              extraActionButtons: extraActionButtons,
+            ),
             const SizedBox(height: 20),
             _DrawnGrid(drawn: drawn),
           ],
         );
       },
+    );
+  }
+}
+
+/// Fila superior: mitad izquierda número grande, mitad derecha acciones verticales.
+class _BolilleroMainRow extends StatelessWidget {
+  const _BolilleroMainRow({
+    required this.lastNumber,
+    required this.canDraw,
+    required this.showReiniciarSorteo,
+    required this.onReiniciarPressed,
+    required this.hasDrawnNumbers,
+    required this.extraActionButtons,
+  });
+
+  final int? lastNumber;
+  final bool canDraw;
+  final bool showReiniciarSorteo;
+  final VoidCallback? onReiniciarPressed;
+  final bool hasDrawnNumbers;
+  final List<Widget> extraActionButtons;
+
+  /// Altura finita obligatoria: dentro de [SingleChildScrollView] el padre da
+  /// `maxHeight: infinity` y un [Row] con [CrossAxisAlignment.stretch] rompe el layout.
+  static double _rowHeight({
+    required bool showReiniciar,
+    required int extraCount,
+  }) {
+    const circle = 120.0;
+    const btn = 52.0;
+    const gap = 10.0;
+    // Columna derecha, todo junto: [reiniciar?] + [extras…] + sacar (sin Spacer).
+    var stack = btn;
+    if (showReiniciar) stack += gap + btn;
+    stack += extraCount * (gap + btn);
+    return math.max(circle, stack) + 12;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final showReiniciar =
+        showReiniciarSorteo && onReiniciarPressed != null && hasDrawnNumbers;
+    final h = _rowHeight(
+      showReiniciar: showReiniciar,
+      extraCount: extraActionButtons.length,
+    );
+
+    return SizedBox(
+      height: h,
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Expanded(
+            child: Center(
+              child: _LastNumberDisplay(number: lastNumber),
+            ),
+          ),
+          Expanded(
+            child: Padding(
+              padding: const EdgeInsets.only(left: 8),
+              child: _ActionsColumn(
+                canDraw: canDraw,
+                showReiniciar: showReiniciar,
+                onReiniciarPressed: onReiniciarPressed,
+                extraActionButtons: extraActionButtons,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Orden: reiniciar arriba, [extraActionButtons] en el medio, «Sacar número» abajo.
+/// Todo el bloque va junto (mismo espaciado fijo) y centrado en la mitad derecha.
+class _ActionsColumn extends StatelessWidget {
+  const _ActionsColumn({
+    required this.canDraw,
+    required this.showReiniciar,
+    required this.onReiniciarPressed,
+    required this.extraActionButtons,
+  });
+
+  final bool canDraw;
+  final bool showReiniciar;
+  final VoidCallback? onReiniciarPressed;
+  final List<Widget> extraActionButtons;
+
+  @override
+  Widget build(BuildContext context) {
+    final children = <Widget>[];
+
+    if (showReiniciar && onReiniciarPressed != null) {
+      children.add(
+        OutlinedButton.icon(
+          onPressed: onReiniciarPressed,
+          icon: const Icon(Icons.refresh_rounded),
+          label: const Text('Reiniciar sorteo'),
+          style: OutlinedButton.styleFrom(
+            visualDensity: VisualDensity.compact,
+          ),
+        ),
+      );
+    }
+
+    for (final extra in extraActionButtons) {
+      if (children.isNotEmpty) {
+        children.add(const SizedBox(height: 10));
+      }
+      children.add(extra);
+    }
+
+    if (children.isNotEmpty) {
+      children.add(const SizedBox(height: 10));
+    }
+    children.add(
+      FilledButton.icon(
+        onPressed: canDraw
+            ? () => context.read<GameBloc>().add(const RandomNumberDrawn())
+            : null,
+        icon: const Icon(Icons.shuffle_rounded),
+        label: const Text('Sacar número'),
+        style: FilledButton.styleFrom(
+          visualDensity: VisualDensity.compact,
+        ),
+      ),
+    );
+
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: children,
     );
   }
 }
@@ -101,7 +263,6 @@ class _DrawnHistoryState extends State<_DrawnHistory> {
       );
     }
 
-    // Invertimos para mostrar el más nuevo a la izquierda
     final reversed = widget.drawn.reversed.toList();
 
     return SizedBox(
@@ -114,7 +275,6 @@ class _DrawnHistoryState extends State<_DrawnHistory> {
         separatorBuilder: (_, __) => const SizedBox(width: 6),
         itemBuilder: (context, index) {
           final number = reversed[index];
-          // La ronda es widget.drawn.length - index (el más nuevo = drawn.length)
           final round = widget.drawn.length - index;
           final isLatest = index == 0;
 
@@ -204,56 +364,33 @@ class _LastNumberDisplay extends StatelessWidget {
   Widget build(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
 
-    return Center(
-      child: Container(
-        width: 120,
-        height: 120,
-        decoration: BoxDecoration(
-          shape: BoxShape.circle,
-          color: colors.primaryContainer,
-          boxShadow: [
-            BoxShadow(
-              color: colors.primary.withValues(alpha: 0.25),
-              blurRadius: 24,
-              spreadRadius: 4,
-            ),
-          ],
-        ),
-        child: Center(
-          child: number != null
-              ? Text(
-                  '$number',
-                  style: TextStyle(
-                    fontSize: 52,
-                    fontWeight: FontWeight.w900,
-                    color: colors.onPrimaryContainer,
-                    height: 1,
-                  ),
-                )
-              : Icon(Icons.casino_rounded,
-                  size: 48, color: colors.onPrimaryContainer),
-        ),
+    return Container(
+      width: 120,
+      height: 120,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        color: colors.primaryContainer,
+        boxShadow: [
+          BoxShadow(
+            color: colors.primary.withValues(alpha: 0.25),
+            blurRadius: 24,
+            spreadRadius: 4,
+          ),
+        ],
       ),
-    );
-  }
-}
-
-// ── Botón sortear ──────────────────────────────────────────────────────────────
-
-class _DrawButton extends StatelessWidget {
-  const _DrawButton({required this.canDraw});
-
-  final bool canDraw;
-
-  @override
-  Widget build(BuildContext context) {
-    return Center(
-      child: FilledButton.icon(
-        onPressed: canDraw
-            ? () => context.read<GameBloc>().add(const RandomNumberDrawn())
-            : null,
-        icon: const Icon(Icons.shuffle_rounded),
-        label: const Text('Sacar número'),
+      child: Center(
+        child: number != null
+            ? Text(
+                '$number',
+                style: TextStyle(
+                  fontSize: 60,
+                  fontWeight: FontWeight.w900,
+                  color: colors.onPrimaryContainer,
+                  height: 1,
+                ),
+              )
+            : Icon(Icons.casino_rounded,
+                size: 48, color: colors.onPrimaryContainer),
       ),
     );
   }
@@ -297,8 +434,8 @@ class _DrawnGrid extends StatelessWidget {
             child: Text(
               '$number',
               style: TextStyle(
-                fontSize: 11,
-                fontWeight: isDrawn ? FontWeight.bold : FontWeight.normal,
+                fontSize: 14,
+                fontWeight: isDrawn ? FontWeight.w900 : FontWeight.w700,
                 color: isDrawn ? colors.onPrimary : colors.onSurfaceVariant,
               ),
             ),

@@ -147,52 +147,28 @@ class _BolilleroPageState extends State<BolilleroPage> {
             padding: const EdgeInsets.all(20),
             child: Column(
               children: [
-                const BolilleroWidget(),
-                const SizedBox(height: 16),
-                BlocBuilder<GameBloc, GameState>(
-                  builder: (context, state) {
-                    if (state is GameInProgress || state is GameOver) {
-                      return _ResetButton(
-                        onConfirm: () => _onConfirmReiniciarSorteo(context),
-                      );
-                    }
-                    return const SizedBox.shrink();
-                  },
+                BolilleroWidget(
+                  onReiniciarPressed: () => AlertManager.showConfirmSheet(
+                    title: 'Reiniciar bolillero',
+                    description: '¿Seguro que querés reiniciar el sorteo?',
+                    options: [
+                      SheetOption(
+                        label: 'Reiniciar',
+                        onTap: () => _onConfirmReiniciarSorteo(context),
+                      ),
+                      SheetOption(
+                        label: 'Cancelar',
+                        style: SheetOptionStyle.outlined,
+                        onTap: () {},
+                      ),
+                    ],
+                  ),
                 ),
               ],
             ),
           ),
         ),
       ),
-    );
-  }
-}
-
-class _ResetButton extends StatelessWidget {
-  const _ResetButton({required this.onConfirm});
-
-  final VoidCallback onConfirm;
-
-  @override
-  Widget build(BuildContext context) {
-    return OutlinedButton.icon(
-      onPressed: () => AlertManager.showConfirmSheet(
-        title: 'Reiniciar bolillero',
-        description: '¿Seguro que querés reiniciar el sorteo?',
-        options: [
-          SheetOption(
-            label: 'Reiniciar',
-            onTap: onConfirm,
-          ),
-          SheetOption(
-            label: 'Cancelar',
-            style: SheetOptionStyle.outlined,
-            onTap: () {},
-          ),
-        ],
-      ),
-      icon: const Icon(Icons.refresh_rounded),
-      label: const Text('Reiniciar sorteo'),
     );
   }
 }
