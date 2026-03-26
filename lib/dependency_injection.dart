@@ -13,6 +13,8 @@ import 'features/game/domain/repositories/session_repository.dart';
 import 'features/game/presentation/bloc/game_bloc.dart';
 import 'features/game/presentation/cubit/favorites_cubit.dart';
 import 'features/game/presentation/cubit/session_cubit.dart';
+import 'features/home/data/repositories/theme_preferences_repository_impl.dart';
+import 'features/home/domain/repositories/theme_preferences_repository.dart';
 import 'features/home/presentation/cubit/theme_cubit.dart';
 
 final sl = GetIt.instance;
@@ -41,6 +43,13 @@ Future<void> configureDependencies() async {
     () => SessionRepositoryImpl(),
   );
 
+  // ── Preferencias de UI ─────────────────────────────────────────────
+  final themePreferencesRepository = ThemePreferencesRepositoryImpl();
+  sl.registerLazySingleton<IThemePreferencesRepository>(
+    () => themePreferencesRepository,
+  );
+  final initialThemeMode = await themePreferencesRepository.load();
+
   // ── Dominio del juego ──────────────────────────────────────────────
   sl.registerLazySingleton<CartonManager>(CartonManager.new);
 
@@ -49,7 +58,9 @@ Future<void> configureDependencies() async {
   sl.registerFactory<GameBloc>(GameBloc.new);
 
   // Singletons: estado global que vive toda la sesión.
-  sl.registerLazySingleton<ThemeCubit>(ThemeCubit.new);
+  sl.registerLazySingleton<ThemeCubit>(
+    () => ThemeCubit(sl<IThemePreferencesRepository>(), initialThemeMode),
+  );
   sl.registerLazySingleton<FavoritesCubit>(
     () => FavoritesCubit(sl<IFavoriteCartonsRepository>()),
   );
