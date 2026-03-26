@@ -61,8 +61,8 @@ class _GamePlayPageState extends State<GamePlayPage>
         setState(() => _showBolilleroHint = true);
         _pulseCtrl.repeat(reverse: true);
 
-        // Abre el sheet suavemente después de 1 segundo.
-        Future.delayed(const Duration(seconds: 1), () {
+        // Abre el sheet suavemente después de medio segundo.
+        Future.delayed(const Duration(milliseconds: 500), () {
           if (mounted) _showBolilleroModal(context);
         });
       });
@@ -123,8 +123,7 @@ class _GamePlayPageState extends State<GamePlayPage>
       (c) => !favState.isFavorite(FavoriteCarton.idFromGrid(c.card)),
     );
 
-    const unsavedMsg =
-        'Los cartones se generan al azar cada vez. '
+    const unsavedMsg = 'Los cartones se generan al azar cada vez. '
         'Si salís sin guardarlos no los vas a encontrar de nuevo.';
 
     if (args.mode == GameMode.combined) {
@@ -321,8 +320,7 @@ class _GamePlayPageState extends State<GamePlayPage>
                   icon: const Icon(Icons.restart_alt_rounded),
                   tooltip: isCombined ? 'Reiniciar juego' : 'Limpiar marcas',
                   onPressed: () => AlertManager.showConfirmSheet(
-                    title:
-                        isCombined ? 'Reiniciar juego' : 'Limpiar marcas',
+                    title: isCombined ? 'Reiniciar juego' : 'Limpiar marcas',
                     description: isCombined
                         ? 'Se borrarán las marcas y el bolillero comenzará de cero.'
                         : 'Se borrarán todas las marcas del cartón.',
@@ -331,9 +329,7 @@ class _GamePlayPageState extends State<GamePlayPage>
                         label: isCombined ? 'Reiniciar' : 'Limpiar',
                         onTap: () {
                           _clearSession();
-                          context
-                              .read<GameBloc>()
-                              .add(const GameReset());
+                          context.read<GameBloc>().add(const GameReset());
                           context.read<GameBloc>().add(GameStarted(
                                 mode: args.mode,
                                 cartones: args.cartones,
@@ -385,10 +381,10 @@ class _GamePlayPageState extends State<GamePlayPage>
                 state.newlyAchievedPrizes.isNotEmpty) {
               final cartones = state.cartones;
               for (final result in state.newlyAchievedPrizes) {
-                final idx =
-                    cartones.indexWhere((c) => c.id == result.cartonId);
-                final suffix =
-                    cartones.length > 1 && idx >= 0 ? ' — Cartón ${idx + 1}' : '';
+                final idx = cartones.indexWhere((c) => c.id == result.cartonId);
+                final suffix = cartones.length > 1 && idx >= 0
+                    ? ' — Cartón ${idx + 1}'
+                    : '';
                 switch (result.prize) {
                   case PrizeType.cuaterno:
                     AlertManager.showTopSnackBarSuccess(
@@ -410,8 +406,7 @@ class _GamePlayPageState extends State<GamePlayPage>
             }
 
             if (state is! GameOver) return;
-            final hasLota =
-                state.results.any((r) => r.prize == PrizeType.lota);
+            final hasLota = state.results.any((r) => r.prize == PrizeType.lota);
             if (hasLota) {
               AlertManager.showSnackBarSuccess(
                 message: '¡Lota! Partida finalizada.',
@@ -500,7 +495,6 @@ class _GamePlayPageState extends State<GamePlayPage>
       ),
     );
   }
-
 }
 
 // ── Vistas internas ────────────────────────────────────────────────────────────
@@ -584,8 +578,7 @@ class _CartonActions extends StatelessWidget {
     final contentId = FavoriteCarton.idFromGrid(carton.card);
     final colorIndex = cardColor == null
         ? 0
-        : LotaCardColors.all
-            .indexWhere((c) => c.primary == cardColor!.primary);
+        : LotaCardColors.all.indexWhere((c) => c.primary == cardColor!.primary);
 
     return BlocBuilder<FavoritesCubit, FavoritesState>(
       builder: (context, favState) {
@@ -634,4 +627,3 @@ class _CartonActions extends StatelessWidget {
     );
   }
 }
-
