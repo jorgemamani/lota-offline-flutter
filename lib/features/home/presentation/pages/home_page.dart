@@ -65,7 +65,7 @@ class HomePage extends StatelessWidget {
                     children: [
                       _GameModeCard(
                         mode: GameMode.markOnly,
-                        icon: Icons.edit_note_rounded,
+                        imagePath: AppAssets.gameModeMarkCarton,
                         color: AppColors.gameModeMarkOnly,
                         onTap: () =>
                             _goToCartonSelect(context, GameMode.markOnly),
@@ -73,14 +73,14 @@ class HomePage extends StatelessWidget {
                       const SizedBox(height: 16),
                       _GameModeCard(
                         mode: GameMode.bolilleroOnly,
-                        icon: Icons.casino_rounded,
+                        imagePath: AppAssets.gameModeBolillero,
                         color: AppColors.gameModeBolillero,
                         onTap: () => context.push(RouteNames.bolillero),
                       ),
                       const SizedBox(height: 16),
                       _GameModeCard(
                         mode: GameMode.combined,
-                        icon: Icons.join_full_rounded,
+                        imagePath: AppAssets.gameModeCombined,
                         color: AppColors.gameModeCombined,
                         onTap: () =>
                             _goToCartonSelect(context, GameMode.combined),
@@ -442,13 +442,13 @@ class _SessionRecoveryCard extends StatelessWidget {
 class _GameModeCard extends StatelessWidget {
   const _GameModeCard({
     required this.mode,
-    required this.icon,
+    required this.imagePath,
     required this.color,
     required this.onTap,
   });
 
   final GameMode mode;
-  final IconData icon;
+  final String imagePath;
   final Color color;
   final VoidCallback onTap;
 
@@ -479,7 +479,15 @@ class _GameModeCard extends StatelessWidget {
                   color: color.withValues(alpha: 0.12),
                   borderRadius: BorderRadius.circular(14),
                 ),
-                child: Icon(icon, color: color, size: 28),
+                alignment: Alignment.center,
+                padding: const EdgeInsets.all(8),
+                child: ImageComponent(
+                  imagePath: imagePath,
+                  width: 40,
+                  height: 40,
+                  fit: BoxFit.contain,
+                  color: color,
+                ),
               ),
               const SizedBox(width: 16),
               Expanded(

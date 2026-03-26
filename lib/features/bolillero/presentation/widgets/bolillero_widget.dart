@@ -3,6 +3,8 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../../../../shared/constants/app_assets.dart';
+import '../../../../shared/widgets/image_component.dart';
 import '../../../game/presentation/bloc/game_bloc.dart';
 
 /// Widget reutilizable que muestra el bolillero.
@@ -389,8 +391,13 @@ class _LastNumberDisplay extends StatelessWidget {
                   height: 1,
                 ),
               )
-            : Icon(Icons.casino_rounded,
-                size: 48, color: colors.onPrimaryContainer),
+            : ImageComponent(
+                imagePath: AppAssets.gameModeBolillero,
+                width: 80,
+                height: 80,
+                fit: BoxFit.contain,
+                color: colors.onPrimaryContainer,
+              ),
       ),
     );
   }

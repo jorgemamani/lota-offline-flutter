@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../../../../shared/constants/app_assets.dart';
 import '../../../../shared/constants/app_colors.dart';
 import '../../../../shared/constants/lota_card_colors.dart';
 import '../../../../shared/managers/alert_manager.dart';
+import '../../../../shared/widgets/image_component.dart';
 import '../../../../shared/widgets/loading_indicator.dart';
 import '../../domain/models/favorite_carton.dart';
 import '../../domain/models/session_data.dart';
@@ -255,7 +257,14 @@ class _GamePlayPageState extends State<GamePlayPage>
                     clipBehavior: Clip.none,
                     children: [
                       IconButton(
-                        icon: const Icon(Icons.casino_rounded),
+                        icon: ImageComponent(
+                          imagePath: AppAssets.gameModeBolillero,
+                          width: 30,
+                          height: 30,
+                          fit: BoxFit.contain,
+                          color: IconTheme.of(context).color ??
+                              Theme.of(context).colorScheme.onSurface,
+                        ),
                         tooltip: 'Bolillero',
                         onPressed: () {
                           _stopBolilleroHint();

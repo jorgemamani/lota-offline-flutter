@@ -16,6 +16,8 @@ class ImageComponent extends StatefulWidget {
   final Widget? errorWidget;
   final BoxFit fit;
   final bool showShimmer;
+  /// Tinte para assets locales (raster o SVG). Útil para iconos monocromáticos.
+  final Color? color;
 
   const ImageComponent({
     super.key,
@@ -26,6 +28,7 @@ class ImageComponent extends StatefulWidget {
     this.errorWidget,
     this.fit = BoxFit.contain,
     this.showShimmer = false,
+    this.color,
   });
 
   @override
@@ -60,6 +63,9 @@ class _ImageComponentState extends State<ImageComponent> {
         height: widget.height,
         width: widget.width,
         fit: widget.fit,
+        colorFilter: widget.color != null
+            ? ColorFilter.mode(widget.color!, BlendMode.srcIn)
+            : null,
         placeholderBuilder: (context) => _buildShimmer(),
       );
     } else {
@@ -68,6 +74,9 @@ class _ImageComponentState extends State<ImageComponent> {
         height: widget.height,
         width: widget.width,
         fit: widget.fit,
+        color: widget.color,
+        colorBlendMode:
+            widget.color != null ? BlendMode.srcIn : null,
         errorBuilder: (context, error, stackTrace) => _buildErrorWidget(),
       );
     }
@@ -92,7 +101,7 @@ class _ImageComponentState extends State<ImageComponent> {
       if (webWidget != null) return webWidget;
     }
 
-    return CachedNetworkImage(
+    Widget network = CachedNetworkImage(
       imageUrl: widget.imagePath,
       width: widget.width,
       height: widget.height,
@@ -101,6 +110,13 @@ class _ImageComponentState extends State<ImageComponent> {
       errorWidget: (context, url, error) =>
           widget.showShimmer ? _buildShimmer() : _buildErrorWidget(),
     );
+    if (widget.color != null) {
+      network = ColorFiltered(
+        colorFilter: ColorFilter.mode(widget.color!, BlendMode.srcIn),
+        child: network,
+      );
+    }
+    return network;
   }
 
   Widget _buildShimmer() {
