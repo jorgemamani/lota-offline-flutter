@@ -9,6 +9,7 @@ import 'shared/constants/app_colors.dart';
 import 'shared/constants/breakpoints.dart';
 import 'shared/extensions/build_context_extensions.dart';
 import 'features/game/presentation/bloc/game_bloc.dart';
+import 'features/game/presentation/cubit/carton_display_scale_cubit.dart';
 import 'features/game/presentation/cubit/favorites_cubit.dart';
 import 'features/game/presentation/cubit/session_cubit.dart';
 import 'features/home/presentation/cubit/theme_cubit.dart';
@@ -43,6 +44,7 @@ class LotaApp extends StatelessWidget {
         BlocProvider(create: (_) => sl<ThemeCubit>()),
         BlocProvider(create: (_) => sl<FavoritesCubit>()),
         BlocProvider(create: (_) => sl<SessionCubit>()),
+        BlocProvider(create: (_) => sl<CartonDisplayScaleCubit>()),
       ],
       child: BlocBuilder<ThemeCubit, ThemeMode>(
         builder: (context, themeMode) {

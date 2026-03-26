@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../shared/constants/app_assets.dart';
 import '../../../../shared/constants/app_colors.dart';
+import '../../../../shared/constants/carton_display_scale.dart';
 import '../../../../shared/constants/lota_card_colors.dart';
 import '../../../../shared/managers/alert_manager.dart';
 import '../../../../shared/widgets/image_component.dart';
@@ -16,6 +17,8 @@ import '../../domain/models/game_mode.dart';
 import '../../domain/models/game_result.dart';
 import '../../domain/models/lota_card_model.dart';
 import '../bloc/game_bloc.dart';
+import '../cubit/carton_display_scale_cubit.dart';
+import '../widgets/carton_display_scale_sheet.dart';
 import '../widgets/lota_card_widget.dart';
 
 class GamePlayArgs {
@@ -240,6 +243,11 @@ class _GamePlayPageState extends State<GamePlayPage>
         appBar: AppBar(
           title: Text(args.mode.label),
           actions: [
+            IconButton(
+              icon: const Icon(Icons.text_fields_rounded),
+              tooltip: 'Tamaño de los números',
+              onPressed: () => CartonDisplayScaleSheet.show(context),
+            ),
             // Botón bolillero en modal (sólo modo combined, en curso o finalizado)
             if (args.mode == GameMode.combined)
               BlocBuilder<GameBloc, GameState>(
@@ -519,51 +527,63 @@ class _GameBody extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ListView.separated(
-      padding: const EdgeInsets.all(16),
-      itemCount: state.cartones.length,
-      separatorBuilder: (_, __) => const SizedBox(height: 24),
-      itemBuilder: (context, index) {
-        final carton = state.cartones[index];
-        final cardColor = cardColors[carton.id];
-        final accentColor =
-            cardColor?.primary ?? Theme.of(context).colorScheme.primary;
+    return BlocBuilder<CartonDisplayScaleCubit, int>(
+      builder: (context, step) {
+        final displayScale = CartonDisplayScale.multiplierForStep(step);
+        return ListView.separated(
+          padding: const EdgeInsets.all(16),
+          itemCount: state.cartones.length,
+          separatorBuilder: (_, __) => const SizedBox(height: 24),
+          itemBuilder: (context, index) {
+            final carton = state.cartones[index];
+            final cardColor = cardColors[carton.id];
+            final accentColor =
+                cardColor?.primary ?? Theme.of(context).colorScheme.primary;
 
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Padding(
-              padding: const EdgeInsets.only(bottom: 6),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    'Cartón ${index + 1}',
-                    style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                          fontWeight: FontWeight.bold,
-                          color: accentColor,
-                        ),
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 6),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        'Cartón ${index + 1}',
+                        style:
+                            Theme.of(context).textTheme.titleSmall?.copyWith(
+                                  fontWeight: FontWeight.bold,
+                                  color: accentColor,
+                                ),
+                      ),
+                      Text(
+                        '${carton.markedCount} / ${carton.totalNumbers}',
+                        style: Theme.of(context)
+                            .textTheme
+                            .labelMedium
+                            ?.copyWith(
+                              color: Theme.of(context)
+                                  .colorScheme
+                                  .onSurfaceVariant,
+                            ),
+                      ),
+                    ],
                   ),
-                  Text(
-                    '${carton.markedCount} / ${carton.totalNumbers}',
-                    style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                          color: Theme.of(context).colorScheme.onSurfaceVariant,
-                        ),
-                  ),
-                ],
-              ),
-            ),
-            LotaCardWidget(
-              model: carton,
-              drawnNumbers: state.drawnSet,
-              accentColor: cardColor,
-              onCellTap: (number) => context.read<GameBloc>().add(
-                    NumberToggled(cartonId: carton.id, number: number),
-                  ),
-            ),
-            const SizedBox(height: 6),
-            _CartonActions(carton: carton, cardColor: cardColor),
-          ],
+                ),
+                LotaCardWidget(
+                  model: carton,
+                  drawnNumbers: state.drawnSet,
+                  accentColor: cardColor,
+                  displayScale: displayScale,
+                  onCellTap: (number) => context.read<GameBloc>().add(
+                        NumberToggled(cartonId: carton.id, number: number),
+                      ),
+                ),
+                const SizedBox(height: 6),
+                _CartonActions(carton: carton, cardColor: cardColor),
+              ],
+            );
+          },
         );
       },
     );

@@ -6,11 +6,14 @@ import 'core/http_client/domain/http_client.dart';
 import 'core/local_storage/data/local_storage_impl.dart';
 import 'core/local_storage/domain/local_storage.dart';
 import 'features/game/data/carton_manager.dart';
+import 'features/game/data/repositories/carton_display_scale_repository_impl.dart';
 import 'features/game/data/repositories/favorite_cartons_repository_impl.dart';
 import 'features/game/data/repositories/session_repository_impl.dart';
+import 'features/game/domain/repositories/carton_display_scale_repository.dart';
 import 'features/game/domain/repositories/favorite_cartons_repository.dart';
 import 'features/game/domain/repositories/session_repository.dart';
 import 'features/game/presentation/bloc/game_bloc.dart';
+import 'features/game/presentation/cubit/carton_display_scale_cubit.dart';
 import 'features/game/presentation/cubit/favorites_cubit.dart';
 import 'features/game/presentation/cubit/session_cubit.dart';
 import 'features/home/data/repositories/theme_preferences_repository_impl.dart';
@@ -50,6 +53,13 @@ Future<void> configureDependencies() async {
   );
   final initialThemeMode = await themePreferencesRepository.load();
 
+  // ── Escala de cartones (accesibilidad) ─────────────────────────────
+  final cartonDisplayScaleRepository = CartonDisplayScaleRepositoryImpl();
+  sl.registerLazySingleton<ICartonDisplayScaleRepository>(
+    () => cartonDisplayScaleRepository,
+  );
+  final initialCartonDisplayStep = await cartonDisplayScaleRepository.load();
+
   // ── Dominio del juego ──────────────────────────────────────────────
   sl.registerLazySingleton<CartonManager>(CartonManager.new);
 
@@ -66,5 +76,11 @@ Future<void> configureDependencies() async {
   );
   sl.registerLazySingleton<SessionCubit>(
     () => SessionCubit(sl<ISessionRepository>()),
+  );
+  sl.registerLazySingleton<CartonDisplayScaleCubit>(
+    () => CartonDisplayScaleCubit(
+      sl<ICartonDisplayScaleRepository>(),
+      initialCartonDisplayStep,
+    ),
   );
 }

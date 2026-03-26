@@ -21,6 +21,7 @@ class LotaCardWidget extends StatelessWidget {
     this.onCellTap,
     this.compact = false,
     this.accentColor,
+    this.displayScale = 1.0,
   });
 
   final LotaCardModel model;
@@ -37,6 +38,9 @@ class LotaCardWidget extends StatelessWidget {
   /// Color de acento del cartón. Si es null usa el primary del tema.
   final LotaCardColor? accentColor;
 
+  /// Escala visual (celdas y números). Usar [CartonDisplayScale.multiplierForStep].
+  final double displayScale;
+
   @override
   Widget build(BuildContext context) {
     final themeColors = Theme.of(context).colorScheme;
@@ -45,6 +49,9 @@ class LotaCardWidget extends StatelessWidget {
           primary: themeColors.primary,
           onPrimary: themeColors.onPrimary,
         );
+    final s = displayScale.clamp(0.85, 2.0);
+    // Marcos y separadores crecen menos que las celdas para pantallas angostas.
+    final frameS = s.clamp(1.0, 1.2);
 
     return Column(
       mainAxisSize: MainAxisSize.min,
@@ -52,7 +59,7 @@ class LotaCardWidget extends StatelessWidget {
         for (int sub = 0; sub < 3; sub++) ...[
           if (sub > 0)
             Divider(
-              height: compact ? 10 : 14,
+              height: (compact ? 10 : 14) * frameS,
               thickness: 1.5,
               color: themeColors.outlineVariant,
             ),
@@ -64,6 +71,8 @@ class LotaCardWidget extends StatelessWidget {
             compact: compact,
             themeColors: themeColors,
             cardColor: cardColor,
+            displayScale: s,
+            frameScale: frameS,
           ),
         ],
       ],
@@ -81,6 +90,8 @@ class _SubCartonCard extends StatelessWidget {
     required this.compact,
     required this.themeColors,
     required this.cardColor,
+    required this.displayScale,
+    required this.frameScale,
   });
 
   final LotaCardModel model;
@@ -90,28 +101,33 @@ class _SubCartonCard extends StatelessWidget {
   final bool compact;
   final ColorScheme themeColors;
   final LotaCardColor cardColor;
+  final double displayScale;
+  final double frameScale;
 
   @override
   Widget build(BuildContext context) {
     final startRow = subIndex * 3;
+    final fs = frameScale;
 
     return Container(
       decoration: BoxDecoration(
         color: cardColor.primary,
-        borderRadius: BorderRadius.circular(compact ? 6 : 10),
+        borderRadius: BorderRadius.circular((compact ? 6 : 10) * fs),
       ),
-      padding: const EdgeInsets.all(2),
+      padding: EdgeInsets.all(2 * fs),
       child: Container(
         decoration: BoxDecoration(
           color: Colors.white,
-          border:
-              Border.all(color: cardColor.onPrimary, width: compact ? 4 : 6),
-          borderRadius: BorderRadius.circular(compact ? 4 : 8),
+          border: Border.all(
+            color: cardColor.onPrimary,
+            width: (compact ? 4.0 : 6.0) * fs,
+          ),
+          borderRadius: BorderRadius.circular((compact ? 4 : 8) * fs),
         ),
         child: Table(
           border: TableBorder.all(
             color: cardColor.primary,
-            width: compact ? 1 : 1.5,
+            width: (compact ? 1.0 : 1.5) * fs,
           ),
           children: [
             for (int row = startRow; row < startRow + 3; row++)
@@ -127,6 +143,7 @@ class _SubCartonCard extends StatelessWidget {
                         compact: compact,
                         themeColors: themeColors,
                         cardColor: cardColor,
+                        displayScale: displayScale,
                         onTap: model.card[row][col] != 0 && onCellTap != null
                             ? () => onCellTap!(model.card[row][col])
                             : null,
@@ -149,6 +166,7 @@ class _Cell extends StatelessWidget {
     required this.compact,
     required this.themeColors,
     required this.cardColor,
+    required this.displayScale,
     this.onTap,
   });
 
@@ -158,14 +176,16 @@ class _Cell extends StatelessWidget {
   final bool compact;
   final ColorScheme themeColors;
   final LotaCardColor cardColor;
+  final double displayScale;
   final VoidCallback? onTap;
 
   bool get isEmpty => value == 0;
 
   @override
   Widget build(BuildContext context) {
-    final cellHeight = compact ? 28.0 : 38.0;
-    final fontSize = compact ? 12.0 : 18.0;
+    final s = displayScale;
+    final cellHeight = (compact ? 28.0 : 38.0) * s;
+    final fontSize = (compact ? 12.0 : 18.0) * s;
 
     final Color bg;
     final Color fg;

@@ -7,6 +7,7 @@ import 'package:go_router/go_router.dart';
 import '../../../../dependency_injection.dart';
 import '../../../../routing/route_names.dart';
 import '../../../../shared/constants/app_colors.dart';
+import '../../../../shared/constants/carton_display_scale.dart';
 import '../../../../shared/managers/alert_manager.dart';
 import '../../../../shared/constants/lota_card_colors.dart';
 import '../../data/carton_manager.dart';
@@ -14,7 +15,9 @@ import '../../domain/models/favorite_carton.dart';
 import '../../domain/models/game_mode.dart';
 import '../../domain/models/lota_card_model.dart';
 import '../bloc/game_bloc.dart';
+import '../cubit/carton_display_scale_cubit.dart';
 import '../cubit/favorites_cubit.dart';
+import '../widgets/carton_display_scale_sheet.dart';
 import '../widgets/lota_card_widget.dart';
 import 'game_play_page.dart';
 
@@ -175,6 +178,13 @@ class _CartonSelectPageState extends State<CartonSelectPage>
       child: Scaffold(
       appBar: AppBar(
         title: Text('Elegir cartones — ${widget.args.mode.label}'),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.text_fields_rounded),
+            tooltip: 'Tamaño de los números',
+            onPressed: () => CartonDisplayScaleSheet.show(context),
+          ),
+        ],
         bottom: TabBar(
           controller: _tabController,
           tabs: const [
@@ -588,10 +598,16 @@ class _CartonListItem extends StatelessWidget {
                 ],
               ),
               const SizedBox(height: 8),
-              LotaCardWidget(
-                model: carton,
-                compact: true,
-                accentColor: cardColor,
+              BlocBuilder<CartonDisplayScaleCubit, int>(
+                builder: (context, step) {
+                  return LotaCardWidget(
+                    model: carton,
+                    compact: true,
+                    accentColor: cardColor,
+                    displayScale:
+                        CartonDisplayScale.multiplierForStep(step),
+                  );
+                },
               ),
             ],
           ),
