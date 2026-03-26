@@ -167,7 +167,7 @@ class _Header extends StatelessWidget {
         Row(
           children: [
             const ImageComponent(
-              imagePath: AppAssets.lotaIcon,
+              imagePath: AppAssets.lotaLogo,
               width: 60,
               height: 60,
               fit: BoxFit.contain,

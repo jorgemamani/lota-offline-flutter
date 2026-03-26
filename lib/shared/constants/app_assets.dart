@@ -5,8 +5,8 @@
 abstract final class AppAssets {
   AppAssets._();
 
-  // ── Íconos ──────────────────────────────────────────────────────────────────
-  static const lotaIcon = 'assets/images/icon/lota-icon.png';
+  // ── Logo ────────────────────────────────────────────────────────────────────
+  static const lotaLogo = 'assets/images/logo/lota-logo.png';
 
   // ── Modos de juego (home) ───────────────────────────────────────────────────
   static const gameModeMarkCarton = 'assets/images/game_modes/mark_carton_mode.png';

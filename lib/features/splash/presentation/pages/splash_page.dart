@@ -55,7 +55,7 @@ class _SplashPageState extends State<SplashPage>
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 const ImageComponent(
-                  imagePath: AppAssets.lotaIcon,
+                  imagePath: AppAssets.lotaLogo,
                   width: 200,
                   height: 200,
                   fit: BoxFit.contain,

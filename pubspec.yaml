@@ -38,14 +38,14 @@ dev_dependencies:
 flutter_launcher_icons:
   android: "launcher_icon"
   ios: true
-  image_path: "assets/images/icon/lota-icon.png"
+  image_path: "assets/images/logo/lota-logo.png"
   min_sdk_android: 21
   remove_alpha_ios: true
   adaptive_icon_background: "#1E3A5F"
-  adaptive_icon_foreground: "assets/images/icon/lota-icon.png"
+  adaptive_icon_foreground: "assets/images/logo/lota-logo.png"
   web:
     generate: true
-    image_path: "assets/images/icon/lota-icon.png"
+    image_path: "assets/images/logo/lota-logo.png"
     background_color: "#1E3A5F"
     theme_color: "#2563EB"
 
@@ -56,5 +56,5 @@ flutter:
   assets:
     - .env.dev
     - .env.prod
-    - assets/images/icon/
+    - assets/images/logo/
     - assets/images/game_modes/
