@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 
+import '../../../../routing/route_names.dart';
 import '../../../../shared/constants/app_assets.dart';
 import '../../../../shared/constants/app_colors.dart';
 import '../../../../shared/constants/carton_display_scale.dart';
@@ -205,6 +207,116 @@ class _GamePlayPageState extends State<GamePlayPage>
     Navigator.of(context).pop();
   }
 
+  /// Cartones con la misma grilla que en el estado actual pero sin marcas.
+  List<LotaCardModel> _freshCartonesUnmarked(GameState state) {
+    final list = switch (state) {
+      GameInProgress() => state.cartones,
+      GameOver() => state.cartones,
+      _ => args.cartones,
+    };
+    return list
+        .map(
+          (c) => LotaCardModel.fromGrid(
+            id: c.id,
+            grid: c.card,
+          ),
+        )
+        .toList();
+  }
+
+  bool _hasAnyMarks(GameState state) => switch (state) {
+        GameInProgress() => state.cartones.any((c) => c.markedCount > 0),
+        GameOver() => state.cartones.any((c) => c.markedCount > 0),
+        _ => false,
+      };
+
+  void _switchToCombinedMode(BuildContext context) {
+    final bloc = context.read<GameBloc>();
+    final fresh = _freshCartonesUnmarked(bloc.state);
+    _clearSession();
+    bloc.add(const GameReset());
+    bloc.add(GameStarted(
+      mode: GameMode.combined,
+      cartones: fresh,
+    ));
+    if (!context.mounted) return;
+    context.pushReplacement(
+      RouteNames.gamePlay,
+      extra: GamePlayArgs(
+        mode: GameMode.combined,
+        cartones: fresh,
+        cardColors: args.cardColors,
+      ),
+    );
+  }
+
+  void _onMarkOnlyCantarPressed(BuildContext context) {
+    final bloc = context.read<GameBloc>();
+    final state = bloc.state;
+    if (!_hasAnyMarks(state)) {
+      AlertManager.showConfirmSheet(
+        title: '¿Querés ser el cantador?',
+        description:
+            'Vas a pasar al modo ${GameMode.combined.label}: mismos cartones, '
+            'bolillero integrado y los números se marcan solos cuando los '
+            'sorteás.\n\n'
+            'No se pierde nada porque todavía no marcaste números.',
+        options: [
+          SheetOption(
+            label: 'Cambiar de modo',
+            onTap: () => _switchToCombinedMode(context),
+          ),
+          SheetOption(
+            label: 'Cancelar',
+            style: SheetOptionStyle.outlined,
+            onTap: () {},
+          ),
+        ],
+      );
+      return;
+    }
+
+    AlertManager.showConfirmSheet(
+      title: 'Cambiar a ${GameMode.combined.label}',
+      description:
+          'Para usar el bolillero con marcado automático hay que dejar los '
+          'cartones sin marcas. Podés reiniciar y cambiar de modo, o seguir '
+          'marcando a mano.',
+      options: [
+        SheetOption(
+          label: 'Reiniciar y cambiar',
+          onTap: () {
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              AlertManager.showConfirmSheet(
+                title: 'Reiniciar y pasar a ${GameMode.combined.label}',
+                description:
+                    'Se borrarán todas las marcas de todos los cartones y '
+                    'se abrirá el bolillero en el nuevo modo.',
+                options: [
+                  SheetOption(
+                    label: 'Reiniciar y cambiar',
+                    isDestructive: true,
+                    onTap: () => _switchToCombinedMode(context),
+                  ),
+                  SheetOption(
+                    label: 'Cancelar',
+                    style: SheetOptionStyle.outlined,
+                    onTap: () {},
+                  ),
+                ],
+              );
+            });
+          },
+        ),
+        SheetOption(
+          label: 'Cancelar',
+          style: SheetOptionStyle.outlined,
+          onTap: () {},
+        ),
+      ],
+    );
+  }
+
   void _showExitConfirm(
     BuildContext context, {
     required String title,
@@ -241,13 +353,36 @@ class _GamePlayPageState extends State<GamePlayPage>
       },
       child: Scaffold(
         appBar: AppBar(
-          title: Text(args.mode.label),
+          title: Text(
+            args.mode.label,
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+          ),
           actions: [
             IconButton(
               icon: const Icon(Icons.text_fields_rounded),
               tooltip: 'Tamaño de los números',
               onPressed: () => CartonDisplayScaleSheet.show(context),
             ),
+            // Marcar cartones: acceso al modo combinado (cantador + bolillero).
+            if (args.mode == GameMode.markOnly)
+              BlocBuilder<GameBloc, GameState>(
+                builder: (context, state) {
+                  if (state is GameIdle) return const SizedBox.shrink();
+                  return IconButton(
+                    icon: ImageComponent(
+                      imagePath: AppAssets.gameModeBolillero,
+                      width: 30,
+                      height: 30,
+                      fit: BoxFit.contain,
+                      color: IconTheme.of(context).color ??
+                          Theme.of(context).colorScheme.onSurface,
+                    ),
+                    tooltip: 'Quiero cantar',
+                    onPressed: () => _onMarkOnlyCantarPressed(context),
+                  );
+                },
+              ),
             // Botón bolillero en modal (sólo modo combined, en curso o finalizado)
             if (args.mode == GameMode.combined)
               BlocBuilder<GameBloc, GameState>(
@@ -363,29 +498,30 @@ class _GamePlayPageState extends State<GamePlayPage>
                 );
               },
             ),
-            // Ronda actual (visible en curso y al terminar)
-            BlocBuilder<GameBloc, GameState>(
-              builder: (context, state) {
-                final round = switch (state) {
-                  GameInProgress() => state.round,
-                  GameOver() => state.totalRounds,
-                  _ => null,
-                };
-                if (round == null) return const SizedBox.shrink();
-                return Padding(
-                  padding: const EdgeInsets.only(right: 12),
-                  child: Center(
-                    child: Text(
-                      'R$round',
-                      style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                            color: Theme.of(context).colorScheme.primary,
-                            fontWeight: FontWeight.bold,
-                          ),
+            // Ronda = bolillas sacadas; sólo aplica al modo combinado.
+            if (args.mode == GameMode.combined)
+              BlocBuilder<GameBloc, GameState>(
+                builder: (context, state) {
+                  final round = switch (state) {
+                    GameInProgress() => state.round,
+                    GameOver() => state.totalRounds,
+                    _ => null,
+                  };
+                  if (round == null) return const SizedBox.shrink();
+                  return Padding(
+                    padding: const EdgeInsets.only(right: 12),
+                    child: Center(
+                      child: Text(
+                        'R$round',
+                        style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                              color: Theme.of(context).colorScheme.primary,
+                              fontWeight: FontWeight.bold,
+                            ),
+                      ),
                     ),
-                  ),
-                );
-              },
-            ),
+                  );
+                },
+              ),
           ],
         ),
         body: BlocListener<GameBloc, GameState>(

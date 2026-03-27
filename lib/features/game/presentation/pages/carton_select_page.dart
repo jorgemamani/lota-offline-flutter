@@ -147,8 +147,7 @@ class _CartonSelectPageState extends State<CartonSelectPage>
     }
     AlertManager.showConfirmSheet(
       title: 'Tenés cartones seleccionados',
-      description:
-          'Si salís ahora perderás la selección actual.',
+      description: 'Si salís ahora perderás la selección actual.',
       options: [
         SheetOption(
           label: 'Salir igual',
@@ -176,83 +175,87 @@ class _CartonSelectPageState extends State<CartonSelectPage>
         if (!didPop) _handlePop(context);
       },
       child: Scaffold(
-      appBar: AppBar(
-        title: Text('Elegir cartones — ${widget.args.mode.label}'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.text_fields_rounded),
-            tooltip: 'Tamaño de los números',
-            onPressed: () => CartonDisplayScaleSheet.show(context),
+        appBar: AppBar(
+          title: Text(
+            'Elegir cartones\n${widget.args.mode.label}',
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
           ),
-        ],
-        bottom: TabBar(
-          controller: _tabController,
-          tabs: const [
-            Tab(
-              height: 40,
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(Icons.grid_view_rounded, size: 16),
-                  SizedBox(width: 6),
-                  Text('Todos'),
-                ],
-              ),
+          actions: [
+            IconButton(
+              icon: const Icon(Icons.text_fields_rounded),
+              tooltip: 'Tamaño de los números',
+              onPressed: () => CartonDisplayScaleSheet.show(context),
             ),
-            Tab(
-              height: 40,
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
+          ],
+          bottom: TabBar(
+            controller: _tabController,
+            tabs: const [
+              Tab(
+                height: 40,
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(Icons.grid_view_rounded, size: 16),
+                    SizedBox(width: 6),
+                    Text('Todos'),
+                  ],
+                ),
+              ),
+              Tab(
+                height: 40,
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(Icons.star_rounded, size: 16),
+                    SizedBox(width: 6),
+                    Text('Favoritos'),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+        body: Column(
+          children: [
+            _InfoBar(selectedCount: selectedCount, maxSelection: _maxSelection),
+            Expanded(
+              child: TabBarView(
+                controller: _tabController,
                 children: [
-                  Icon(Icons.star_rounded, size: 16),
-                  SizedBox(width: 6),
-                  Text('Favoritos'),
+                  _TodosTab(
+                    available: _available,
+                    cardColors: _cardColors,
+                    selectedIds: _selectedCards.keys.toSet(),
+                    isLoadingMore: _isLoadingMore,
+                    scrollController: _scrollController,
+                    maxSelection: _maxSelection,
+                    onToggleSelect: _toggleSelection,
+                  ),
+                  _FavoritosTab(
+                    selectedIds: _selectedCards.keys.toSet(),
+                    maxSelection: _maxSelection,
+                    onToggleSelect: _toggleSelection,
+                  ),
                 ],
               ),
             ),
           ],
         ),
-      ),
-      body: Column(
-        children: [
-          _InfoBar(selectedCount: selectedCount, maxSelection: _maxSelection),
-          Expanded(
-            child: TabBarView(
-              controller: _tabController,
-              children: [
-                _TodosTab(
-                  available: _available,
-                  cardColors: _cardColors,
-                  selectedIds: _selectedCards.keys.toSet(),
-                  isLoadingMore: _isLoadingMore,
-                  scrollController: _scrollController,
-                  maxSelection: _maxSelection,
-                  onToggleSelect: _toggleSelection,
-                ),
-                _FavoritosTab(
-                  selectedIds: _selectedCards.keys.toSet(),
-                  maxSelection: _maxSelection,
-                  onToggleSelect: _toggleSelection,
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-      bottomNavigationBar: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
-          child: FilledButton.icon(
-            onPressed: selectedCount > 0 ? _startGame : null,
-            icon: const Icon(Icons.play_arrow_rounded),
-            label: Text(
-              selectedCount == 0
-                  ? 'Seleccioná al menos un cartón'
-                  : 'Comenzar con $selectedCount cartón(es)',
+        bottomNavigationBar: SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
+            child: FilledButton.icon(
+              onPressed: selectedCount > 0 ? _startGame : null,
+              icon: const Icon(Icons.play_arrow_rounded),
+              label: Text(
+                selectedCount == 0
+                    ? 'Seleccioná al menos un cartón'
+                    : 'Comenzar con $selectedCount cartón(es)',
+              ),
             ),
           ),
         ),
-      ),
       ),
     );
   }
@@ -279,7 +282,7 @@ class _InfoBar extends StatelessWidget {
           Expanded(
             child: Text(
               'Seleccioná hasta $maxSelection cartones para jugar.',
-              style: theme.textTheme.bodySmall?.copyWith(
+              style: theme.textTheme.bodyMedium?.copyWith(
                 color: theme.colorScheme.onSurfaceVariant,
               ),
             ),
@@ -487,8 +490,7 @@ class _CartonListItem extends StatelessWidget {
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
-            color:
-                isSelected ? accentColor : theme.colorScheme.outlineVariant,
+            color: isSelected ? accentColor : theme.colorScheme.outlineVariant,
             width: isSelected ? 2.5 : 1,
           ),
           boxShadow: isSelected
@@ -580,8 +582,9 @@ class _CartonListItem extends StatelessWidget {
                           }
                         },
                         child: Tooltip(
-                          message:
-                              isFav ? 'Quitar de favoritos' : 'Guardar favorito',
+                          message: isFav
+                              ? 'Quitar de favoritos'
+                              : 'Guardar favorito',
                           child: Icon(
                             isFav
                                 ? Icons.star_rounded
@@ -604,8 +607,7 @@ class _CartonListItem extends StatelessWidget {
                     model: carton,
                     compact: true,
                     accentColor: cardColor,
-                    displayScale:
-                        CartonDisplayScale.multiplierForStep(step),
+                    displayScale: CartonDisplayScale.multiplierForStep(step),
                   );
                 },
               ),

@@ -6,12 +6,12 @@ enum GameMode {
   /// Solo bolillero: muestra números al azar sin cartones.
   bolilleroOnly,
 
-  /// Completo: selección de cartones + bolillero + marcado combinado.
+  /// Combinado: selección de cartones + bolillero + marcado de cartones automaticos.
   combined;
 
   String get label {
     return switch (this) {
-      GameMode.markOnly => 'Marcar Cartón',
+      GameMode.markOnly => 'Marcar Cartones',
       GameMode.bolilleroOnly => 'Bolillero',
       GameMode.combined => 'Cartones + Bolillero',
     };
