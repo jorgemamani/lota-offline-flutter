@@ -13,15 +13,17 @@ enum GameMode {
     return switch (this) {
       GameMode.markOnly => 'Marcar Cartón',
       GameMode.bolilleroOnly => 'Bolillero',
-      GameMode.combined => 'Juego Completo',
+      GameMode.combined => 'Cartones + Bolillero',
     };
   }
 
   String get description {
     return switch (this) {
       GameMode.markOnly => 'Seleccioná tus cartones y marcalos a mano.',
-      GameMode.bolilleroOnly => 'Sorteo de números. Ideal para ser el cantador.',
-      GameMode.combined => 'Sos el cantador: sorteás y los cartones se marcan solos.',
+      GameMode.bolilleroOnly =>
+        'Sorteo de números. Ideal para ser el cantador.',
+      GameMode.combined => 'Jugás con cartones y bolillero al mismo tiempo: '
+          'cantás y los cartones se marcan solos.',
     };
   }
 }

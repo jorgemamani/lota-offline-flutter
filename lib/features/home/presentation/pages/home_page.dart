@@ -81,10 +81,6 @@ class HomePage extends StatelessWidget {
                       _GameModeCard(
                         mode: GameMode.combined,
                         imagePath: AppAssets.gameModeCombined,
-                        title: 'Cartones + Bolillero',
-                        description:
-                            'Jugás con cartones y bolillero al mismo tiempo: '
-                            'cantás y los cartones se marcan solos.',
                         color: AppColors.gameModeCombined,
                         onTap: () =>
                             _goToCartonSelect(context, GameMode.combined),
@@ -447,16 +443,12 @@ class _GameModeCard extends StatelessWidget {
   const _GameModeCard({
     required this.mode,
     required this.imagePath,
-    this.title,
-    this.description,
     required this.color,
     required this.onTap,
   });
 
   final GameMode mode;
   final String imagePath;
-  final String? title;
-  final String? description;
   final Color color;
   final VoidCallback onTap;
 
@@ -503,14 +495,14 @@ class _GameModeCard extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      title ?? mode.label,
+                      mode.label,
                       style: theme.textTheme.titleMedium?.copyWith(
                         fontWeight: FontWeight.bold,
                       ),
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      description ?? mode.description,
+                      mode.description,
                       style: theme.textTheme.bodySmall?.copyWith(
                         color: theme.colorScheme.onSurfaceVariant,
                       ),
