@@ -49,7 +49,7 @@ class LotaApp extends StatelessWidget {
       child: BlocBuilder<ThemeCubit, ThemeMode>(
         builder: (context, themeMode) {
           final app = MaterialApp.router(
-            title: 'Lota',
+            title: 'Lota Pue',
             debugShowCheckedModeBanner: false,
             scaffoldMessengerKey: _scaffoldMessengerKey,
             theme: _buildTheme(Brightness.light),
