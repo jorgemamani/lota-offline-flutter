@@ -59,11 +59,10 @@ lib/generated_plugin_registrant.dart
 lib/l10n/app_localizations.dart
 lib/l10n/app_localizations_*.dart
 
-# Entornos — NUNCA subir al repo
+# Secretos y overrides locales — no versionar
 .env
-.env.dev
-.env.prod
 .env.local
+# .env.dev y .env.prod sí van al repo (solo ENVIRONMENT; sin claves).
 
 # IDE
 .idea/

@@ -22,8 +22,8 @@ workflows:
         script: flutter pub get
 
       - name: Build Web release
-        # Debe coincidir con la URL de GitHub Pages del repo (proyecto: /nombre-repo/).
-        script: flutter build web --release --base-href="/lota-offline-flutter/"
+        # base-href: URL de GitHub Pages del repo. ENVIRONMENT=prod carga .env.prod (versionado).
+        script: flutter build web --release --base-href="/lota-offline-flutter/" --dart-define=ENVIRONMENT=prod
 
       - name: Deploy Web to GitHub Pages
         script: |
