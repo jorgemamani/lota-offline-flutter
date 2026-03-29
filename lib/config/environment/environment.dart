@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 import 'base_config.dart';
@@ -14,15 +15,19 @@ class Environment {
   Future<void> init() async {
     const env = String.fromEnvironment('ENVIRONMENT', defaultValue: 'dev');
 
-    try {
-      switch (env) {
-        case 'prod':
-          await dotenv.load(fileName: '.env.prod');
-        default:
-          await dotenv.load(fileName: '.env.dev');
+    // En web los .env se piden por HTTP → 404 en consola si el asset falla.
+    // El entorno en release viene de --dart-define; DevConfig/ProdConfig tienen los datos.
+    if (!kIsWeb) {
+      try {
+        switch (env) {
+          case 'prod':
+            await dotenv.load(fileName: '.env.prod');
+          default:
+            await dotenv.load(fileName: '.env.dev');
+        }
+      } catch (_) {
+        // Asset .env ausente — la app sigue en modo offline.
       }
-    } catch (_) {
-      // Archivo .env no encontrado — la app funciona igual en modo offline.
     }
 
     final envValue = dotenv.env['ENVIRONMENT'] ?? env;
