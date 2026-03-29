@@ -1,0 +1,41 @@
+# Codemagic — https://docs.codemagic.io/yaml/yaml-getting-started/
+# Tras conectar el repo: Apps → Webhooks → "Update webhook" si hace falta.
+
+workflows:
+  prod-workflow:
+    name: Deploy Production
+    max_build_duration: 60
+    instance_type: mac_mini_m2
+    triggering:
+      events:
+        - push
+      branch_patterns:
+        - pattern: production
+          include: true
+    environment:
+      flutter: stable
+      groups:
+        # En Codemagic: variable de entorno llamada exactamente GITHUB_TOKEN (PAT con scope repo).
+        - github_credentials
+    scripts:
+      - name: Pub get
+        script: flutter pub get
+
+      - name: Build Web release
+        # Debe coincidir con la URL de GitHub Pages del repo (proyecto: /nombre-repo/).
+        script: flutter build web --release --base-href="/lota-offline-flutter/"
+
+      - name: Deploy Web to GitHub Pages
+        script: |
+          set -e
+          cd build/web
+          git init
+          git config user.name "Jorge Luis Mamani"
+          git config user.email "jorgemamani297@gmail.com"
+          git add .
+          git commit -m "Deploy Production"
+          # HEAD evita fallar si la rama local por defecto es "main" y no "master".
+          git push --force "https://${GITHUB_TOKEN}@github.com/jorgemamani/lota-offline-flutter.git" HEAD:gh-pages
+
+    artifacts:
+      - build/web/**
