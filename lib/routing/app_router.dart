@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
+import '../features/about/presentation/pages/about_page.dart';
 import '../features/bolillero/presentation/pages/bolillero_page.dart';
 import '../features/game/presentation/pages/carton_select_page.dart';
 import '../features/game/presentation/pages/game_play_page.dart';
@@ -24,6 +25,11 @@ final appRouter = GoRouter(
       path: RouteNames.home,
       name: 'home',
       builder: (_, __) => const HomePage(),
+    ),
+    GoRoute(
+      path: RouteNames.about,
+      name: 'about',
+      builder: (_, __) => const AboutPage(),
     ),
     GoRoute(
       path: RouteNames.bolillero,

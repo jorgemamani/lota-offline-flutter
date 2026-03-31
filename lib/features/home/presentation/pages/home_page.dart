@@ -181,6 +181,12 @@ class _Header extends StatelessWidget {
               ),
             ),
             const Spacer(),
+            IconButton(
+              tooltip: 'Acerca de la app',
+              onPressed: () => context.push(RouteNames.about),
+              icon: const Icon(Icons.info_outline_rounded),
+            ),
+            const SizedBox(width: 8),
             const _ThemeToggle(),
           ],
         ),

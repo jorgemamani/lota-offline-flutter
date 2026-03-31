@@ -1,6 +1,7 @@
 abstract final class RouteNames {
   static const splash = '/';
   static const home = '/home';
+  static const about = '/about';
 
   // Modo 2: solo bolillero
   static const bolillero = '/bolillero';
