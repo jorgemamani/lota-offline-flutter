@@ -30,7 +30,14 @@ class Environment {
       }
     }
 
-    final envValue = dotenv.env['ENVIRONMENT'] ?? env;
+    var envValue = env;
+    if (!kIsWeb) {
+      try {
+        envValue = dotenv.env['ENVIRONMENT'] ?? env;
+      } catch (_) {
+        // Dotenv no inicializado: conserva el valor por dart-define.
+      }
+    }
     config = _buildConfig(envValue);
   }
 
