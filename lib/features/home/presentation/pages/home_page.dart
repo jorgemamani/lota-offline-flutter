@@ -174,10 +174,10 @@ class _Header extends StatelessWidget {
             ),
             const SizedBox(width: 10),
             Text(
-              'LOTA',
+              'Lota Pue',
               style: theme.textTheme.headlineLarge?.copyWith(
                 fontWeight: FontWeight.w900,
-                letterSpacing: 4,
+                letterSpacing: 2,
               ),
             ),
             const Spacer(),

@@ -62,20 +62,12 @@ class _SplashPageState extends State<SplashPage>
                 ),
                 const SizedBox(height: 10),
                 Text(
-                  'LOTA',
+                  'Lota Pue',
                   style: TextStyle(
-                    fontSize: 48,
+                    fontSize: 40,
                     fontWeight: FontWeight.w900,
                     color: colors.onPrimary,
-                    letterSpacing: 8,
-                  ),
-                ),
-                Text(
-                  'Offline',
-                  style: TextStyle(
-                    fontSize: 14,
-                    color: colors.onPrimary.withValues(alpha: 0.75),
-                    letterSpacing: 2,
+                    letterSpacing: 4,
                   ),
                 ),
                 Text(
