@@ -30,51 +30,54 @@ class AboutPage extends StatelessWidget {
         child: ListView(
           padding: const EdgeInsets.all(24),
           children: [
-            LayoutBuilder(
-              builder: (context, constraints) {
-                final logoMaxSide =
-                    constraints.maxWidth * (kIsWeb ? 1 / 3 : 1 / 2);
-                return Row(
-                  mainAxisSize: MainAxisSize.min,
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    Expanded(
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Text(
-                            AppBranding.shortName,
-                            style: theme.textTheme.headlineSmall?.copyWith(
-                              fontWeight: FontWeight.w700,
-                            ),
-                          ),
-                          const SizedBox(height: 8),
-                          Text(
-                            AppBranding.tagline,
-                            style: theme.textTheme.bodyLarge?.copyWith(
-                              color: theme.colorScheme.onSurfaceVariant,
-                            ),
-                          ),
-                        ],
+            Row(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Expanded(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        AppBranding.shortName,
+                        style: theme.textTheme.headlineSmall?.copyWith(
+                          fontWeight: FontWeight.w700,
+                        ),
                       ),
-                    ),
-                    const SizedBox(width: 16),
-                    SizedBox(
-                      width: logoMaxSide,
-                      height: logoMaxSide,
-                      child: ImageComponent(
-                        imagePath: AppAssets.lotaLogo,
-                        width: logoMaxSide,
-                        height: logoMaxSide,
-                        fit: BoxFit.contain,
+                      const SizedBox(height: 8),
+                      Text(
+                        AppBranding.tagline,
+                        style: theme.textTheme.bodyLarge?.copyWith(
+                          color: theme.colorScheme.onSurfaceVariant,
+                        ),
                       ),
-                    ),
-                  ],
-                );
-              },
+                    ],
+                  ),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: LayoutBuilder(
+                    builder: (context, constraints) {
+                      final side = constraints.maxWidth;
+                      return Align(
+                        alignment: Alignment.center,
+                        child: SizedBox(
+                          width: side,
+                          height: side,
+                          child: ImageComponent(
+                            imagePath: AppAssets.lotaLogo,
+                            width: side,
+                            height: side,
+                            fit: BoxFit.contain,
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                ),
+              ],
             ),
             const SizedBox(height: 24),
             FutureBuilder<PackageInfo>(
