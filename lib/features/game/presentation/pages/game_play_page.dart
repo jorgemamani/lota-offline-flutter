@@ -551,7 +551,7 @@ class _GamePlayPageState extends State<GamePlayPage>
                     );
                   case PrizeType.lota:
                     AlertManager.showTopSnackBarSuccess(
-                      message: '¡LOTA!$suffix',
+                      message: '¡Cartón lleno!$suffix',
                       duration: const Duration(seconds: 4),
                     );
                 }
@@ -562,7 +562,7 @@ class _GamePlayPageState extends State<GamePlayPage>
             final hasLota = state.results.any((r) => r.prize == PrizeType.lota);
             if (hasLota) {
               AlertManager.showSnackBarSuccess(
-                message: '¡Lota! Partida finalizada.',
+                message: '¡Cartón lleno! Partida finalizada.',
               );
             } else {
               AlertManager.showSnackBar(

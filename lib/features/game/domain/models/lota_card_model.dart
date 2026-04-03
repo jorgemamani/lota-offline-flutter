@@ -119,7 +119,7 @@ class LotaCardModel {
     return true;
   }
 
-  /// true si todos los números del cartón completo están marcados (¡LOTA!).
+  /// true si todos los números del cartón están marcados (cartón lleno).
   bool get hasLota => markedCount == totalNumbers;
 
   bool _isRowComplete(int row) {
