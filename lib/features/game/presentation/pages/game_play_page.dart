@@ -134,11 +134,7 @@ class _GamePlayPageState extends State<GamePlayPage>
         'Si salís sin guardarlos no los vas a encontrar de nuevo.';
 
     if (args.mode == GameMode.combined) {
-      final drawnCount = switch (gameState) {
-        GameInProgress() => gameState.drawnNumbers.length,
-        GameOver() => gameState.drawnNumbers.length,
-        _ => 0,
-      };
+      final drawnCount = _drawnNumbersCount(gameState);
       final hasDrawn = drawnCount > 0;
       final n = drawnCount;
       final drawnMsg =
@@ -230,6 +226,78 @@ class _GamePlayPageState extends State<GamePlayPage>
         _ => false,
       };
 
+  int _drawnNumbersCount(GameState state) => switch (state) {
+        GameInProgress() => state.drawnNumbers.length,
+        GameOver() => state.drawnNumbers.length,
+        _ => 0,
+      };
+
+  void _showChoiceSheet({
+    required String title,
+    required String description,
+    required String primaryLabel,
+    required VoidCallback onPrimary,
+    required String secondaryLabel,
+  }) {
+    AlertManager.showConfirmSheet(
+      title: title,
+      description: description,
+      options: [
+        SheetOption(label: primaryLabel, onTap: onPrimary),
+        SheetOption(
+          label: secondaryLabel,
+          style: SheetOptionStyle.outlined,
+          onTap: () {},
+        ),
+      ],
+    );
+  }
+
+  /// Primer sheet “Reiniciar y cambiar” + segundo sheet destructivo de
+  /// confirmación (mismo patrón markOnly↔combined).
+  void _showRestartThenConfirmSheet({
+    required String introTitle,
+    required String introDescription,
+    required String confirmTitle,
+    required String confirmDescription,
+    required VoidCallback onConfirmDestructive,
+  }) {
+    AlertManager.showConfirmSheet(
+      title: introTitle,
+      description: introDescription,
+      options: [
+        SheetOption(
+          label: 'Reiniciar y cambiar',
+          onTap: () {
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              AlertManager.showConfirmSheet(
+                title: confirmTitle,
+                description: confirmDescription,
+                options: [
+                  SheetOption(
+                    label: 'Reiniciar y cambiar',
+                    isDestructive: true,
+                    onTap: onConfirmDestructive,
+                  ),
+                  SheetOption(
+                    label: 'Cancelar',
+                    style: SheetOptionStyle.outlined,
+                    onTap: () {},
+                  ),
+                ],
+              );
+            });
+          },
+        ),
+        SheetOption(
+          label: 'Cancelar',
+          style: SheetOptionStyle.outlined,
+          onTap: () {},
+        ),
+      ],
+    );
+  }
+
   void _switchToCombinedMode(BuildContext context) {
     final bloc = context.read<GameBloc>();
     final fresh = _freshCartonesUnmarked(bloc.state);
@@ -250,70 +318,90 @@ class _GamePlayPageState extends State<GamePlayPage>
     );
   }
 
-  void _onMarkOnlyCantarPressed(BuildContext context) {
+  void _switchToMarkOnlyMode(BuildContext context) {
     final bloc = context.read<GameBloc>();
-    final state = bloc.state;
+    final fresh = _freshCartonesUnmarked(bloc.state);
+    _clearSession();
+    bloc.add(const GameReset());
+    bloc.add(GameStarted(
+      mode: GameMode.markOnly,
+      cartones: fresh,
+    ));
+    if (!context.mounted) return;
+    context.pushReplacement(
+      RouteNames.gamePlay,
+      extra: GamePlayArgs(
+        mode: GameMode.markOnly,
+        cartones: fresh,
+        cardColors: args.cardColors,
+      ),
+    );
+  }
+
+  /// En modo combinado el toque en el cartón no marca: se informa y se ofrece
+  /// pasar a marcado manual (con o sin reinicio según haya sorteos).
+  void _onCombinedModeCartonTapped(BuildContext context) {
+    final state = context.read<GameBloc>().state;
+    if (_drawnNumbersCount(state) == 0) {
+      _showChoiceSheet(
+        title: 'Marcado automático',
+        description:
+            'En ${GameMode.combined.label} los números se marcan solos cuando '
+            'los sorteás desde el bolillero: no hace falta (ni se puede) tocar '
+            'el cartón.\n\n'
+            'Si querés marcar a mano, pasá a ${GameMode.markOnly.label}. '
+            'Como todavía no salió ningún número, no se pierde progreso.',
+        primaryLabel: 'Cambiar de modo',
+        onPrimary: () => _switchToMarkOnlyMode(context),
+        secondaryLabel: 'Entendido',
+      );
+      return;
+    }
+
+    _showRestartThenConfirmSheet(
+      introTitle: 'Marcado automático',
+      introDescription:
+          'En ${GameMode.combined.label} el cartón sigue al bolillero: la '
+          'selección es automática.\n\n'
+          'Para usar ${GameMode.markOnly.label} hay que dejar los cartones sin '
+          'marcas y el bolillero en cero. Podés reiniciar y cambiar de modo, o '
+          'seguir en este modo.',
+      confirmTitle: 'Reiniciar y pasar a ${GameMode.markOnly.label}',
+      confirmDescription:
+          'Se borrarán todas las marcas, el historial del bolillero '
+          'y vas a marcar cada número a mano.',
+      onConfirmDestructive: () => _switchToMarkOnlyMode(context),
+    );
+  }
+
+  void _onMarkOnlyCantarPressed(BuildContext context) {
+    final state = context.read<GameBloc>().state;
     if (!_hasAnyMarks(state)) {
-      AlertManager.showConfirmSheet(
+      _showChoiceSheet(
         title: '¿Querés ser el cantador?',
         description:
             'Vas a pasar al modo ${GameMode.combined.label}: mismos cartones, '
             'bolillero integrado y los números se marcan solos cuando los '
             'sorteás.\n\n'
             'No se pierde nada porque todavía no marcaste números.',
-        options: [
-          SheetOption(
-            label: 'Cambiar de modo',
-            onTap: () => _switchToCombinedMode(context),
-          ),
-          SheetOption(
-            label: 'Cancelar',
-            style: SheetOptionStyle.outlined,
-            onTap: () {},
-          ),
-        ],
+        primaryLabel: 'Cambiar de modo',
+        onPrimary: () => _switchToCombinedMode(context),
+        secondaryLabel: 'Cancelar',
       );
       return;
     }
 
-    AlertManager.showConfirmSheet(
-      title: 'Cambiar a ${GameMode.combined.label}',
-      description:
+    _showRestartThenConfirmSheet(
+      introTitle: 'Cambiar a ${GameMode.combined.label}',
+      introDescription:
           'Para usar el bolillero con marcado automático hay que dejar los '
           'cartones sin marcas. Podés reiniciar y cambiar de modo, o seguir '
           'marcando a mano.',
-      options: [
-        SheetOption(
-          label: 'Reiniciar y cambiar',
-          onTap: () {
-            WidgetsBinding.instance.addPostFrameCallback((_) {
-              AlertManager.showConfirmSheet(
-                title: 'Reiniciar y pasar a ${GameMode.combined.label}',
-                description:
-                    'Se borrarán todas las marcas de todos los cartones y '
-                    'se abrirá el bolillero en el nuevo modo.',
-                options: [
-                  SheetOption(
-                    label: 'Reiniciar y cambiar',
-                    isDestructive: true,
-                    onTap: () => _switchToCombinedMode(context),
-                  ),
-                  SheetOption(
-                    label: 'Cancelar',
-                    style: SheetOptionStyle.outlined,
-                    onTap: () {},
-                  ),
-                ],
-              );
-            });
-          },
-        ),
-        SheetOption(
-          label: 'Cancelar',
-          style: SheetOptionStyle.outlined,
-          onTap: () {},
-        ),
-      ],
+      confirmTitle: 'Reiniciar y pasar a ${GameMode.combined.label}',
+      confirmDescription:
+          'Se borrarán todas las marcas de todos los cartones y '
+          'se abrirá el bolillero en el nuevo modo.',
+      onConfirmDestructive: () => _switchToCombinedMode(context),
     );
   }
 
@@ -582,6 +670,10 @@ class _GamePlayPageState extends State<GamePlayPage>
                 return _GameBody(
                   state: state,
                   cardColors: args.cardColors,
+                  playMode: args.mode,
+                  onCombinedCartonTapped: args.mode == GameMode.combined
+                      ? () => _onCombinedModeCartonTapped(context)
+                      : null,
                 );
               }
               if (state is GameOver) {
@@ -599,6 +691,10 @@ class _GamePlayPageState extends State<GamePlayPage>
                 return _GameBody(
                   state: frozen,
                   cardColors: args.cardColors,
+                  playMode: args.mode,
+                  onCombinedCartonTapped: args.mode == GameMode.combined
+                      ? () => _onCombinedModeCartonTapped(context)
+                      : null,
                 );
               }
               return const SizedBox.shrink();
@@ -661,10 +757,14 @@ class _GameBody extends StatelessWidget {
   const _GameBody({
     required this.state,
     required this.cardColors,
+    required this.playMode,
+    this.onCombinedCartonTapped,
   });
 
   final GameInProgress state;
   final Map<String, LotaCardColor> cardColors;
+  final GameMode playMode;
+  final VoidCallback? onCombinedCartonTapped;
 
   @override
   Widget build(BuildContext context) {
@@ -716,9 +816,12 @@ class _GameBody extends StatelessWidget {
                   drawnNumbers: state.drawnSet,
                   accentColor: cardColor,
                   displayScale: displayScale,
-                  onCellTap: (number) => context.read<GameBloc>().add(
-                        NumberToggled(cartonId: carton.id, number: number),
-                      ),
+                  onCellTap: playMode == GameMode.combined &&
+                          onCombinedCartonTapped != null
+                      ? (_) => onCombinedCartonTapped!()
+                      : (number) => context.read<GameBloc>().add(
+                            NumberToggled(cartonId: carton.id, number: number),
+                          ),
                 ),
                 const SizedBox(height: 6),
                 _CartonActions(carton: carton, cardColor: cardColor),
