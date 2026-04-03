@@ -6,8 +6,10 @@ import 'package:url_launcher/url_launcher.dart';
 import '../../data/app_releases.dart';
 import '../../domain/models/app_release.dart';
 import '../../domain/models/release_note.dart';
+import '../../../../shared/constants/app_assets.dart';
 import '../../../../shared/constants/app_branding.dart';
 import '../../../../shared/managers/alert_manager.dart';
+import '../../../../shared/widgets/image_component.dart';
 
 class AboutPage extends StatelessWidget {
   const AboutPage({super.key});
@@ -28,18 +30,51 @@ class AboutPage extends StatelessWidget {
         child: ListView(
           padding: const EdgeInsets.all(24),
           children: [
-            Text(
-              AppBranding.displayTitle,
-              style: theme.textTheme.headlineSmall?.copyWith(
-                fontWeight: FontWeight.w700,
-              ),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              AppBranding.tagline,
-              style: theme.textTheme.bodyLarge?.copyWith(
-                color: theme.colorScheme.onSurfaceVariant,
-              ),
+            LayoutBuilder(
+              builder: (context, constraints) {
+                final logoMaxSide =
+                    constraints.maxWidth * (kIsWeb ? 1 / 3 : 1 / 2);
+                return Row(
+                  mainAxisSize: MainAxisSize.min,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    Expanded(
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(
+                            AppBranding.shortName,
+                            style: theme.textTheme.headlineSmall?.copyWith(
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            AppBranding.tagline,
+                            style: theme.textTheme.bodyLarge?.copyWith(
+                              color: theme.colorScheme.onSurfaceVariant,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(width: 16),
+                    SizedBox(
+                      width: logoMaxSide,
+                      height: logoMaxSide,
+                      child: ImageComponent(
+                        imagePath: AppAssets.lotaLogo,
+                        width: logoMaxSide,
+                        height: logoMaxSide,
+                        fit: BoxFit.contain,
+                      ),
+                    ),
+                  ],
+                );
+              },
             ),
             const SizedBox(height: 24),
             FutureBuilder<PackageInfo>(

@@ -26,6 +26,8 @@ abstract final class AppColors {
   // ── Slate ────────────────────────────────────────────────────────────────
   static const slate600 = Color(0xFF475569);
   static const slate700 = Color(0xFF334155);
+  static const slate800 = Color(0xFF1E293B);
+  static const slate900 = Color(0xFF0F172A);
 
   // ── Blue ─────────────────────────────────────────────────────────────────
   static const blue600 = Color(0xFF2563EB);
@@ -67,6 +69,11 @@ abstract final class AppColors {
 
   // ── Marca ────────────────────────────────────────────────────────────────
   static const primary = blue600;
+
+  /// Splash: oscuro neutro (misma familia slate que info UI); resalta el logo y
+  /// conecta visualmente con el resto de la app sin el azul primario a pantalla completa.
+  static const splashBackground = slate900;
+  static const splashOnBackground = Color(0xFFF8FAFC);
 
   // ── Modos de juego ────────────────────────────────────────────────────────
   static const gameModeMarkOnly  = primary;
