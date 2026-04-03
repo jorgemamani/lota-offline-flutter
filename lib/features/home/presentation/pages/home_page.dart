@@ -392,6 +392,7 @@ class _SessionRecoveryCard extends StatelessWidget {
         onTap: onResume,
         borderRadius: BorderRadius.circular(16),
         child: Container(
+          clipBehavior: Clip.antiAlias,
           decoration: BoxDecoration(
             color: bgColor,
             borderRadius: BorderRadius.circular(16),
@@ -399,105 +400,107 @@ class _SessionRecoveryCard extends StatelessWidget {
               color: _accent.withValues(alpha: isDark ? 0.4 : 0.3),
             ),
           ),
-          child: Row(
-            children: [
-              // ── Franja de color izquierda ────────────────────────────
-              Container(
-                width: 4,
-                height: 72,
-                margin: const EdgeInsets.only(left: 0),
-                decoration: const BoxDecoration(
+          child: IntrinsicHeight(
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                // ── Franja izquierda: altura = la de toda la card ─────
+                Container(
+                  width: 6,
                   color: _accent,
-                  borderRadius: BorderRadius.horizontal(
-                    left: Radius.circular(16),
+                ),
+                const SizedBox(width: 14),
+                // ── Icono ────────────────────────────────────────────────
+                Align(
+                  alignment: Alignment.center,
+                  child: Container(
+                    width: 40,
+                    height: 40,
+                    decoration: BoxDecoration(
+                      color: _accent.withValues(alpha: 0.15),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: const Icon(
+                      Icons.history_rounded,
+                      color: _accent,
+                      size: 22,
+                    ),
                   ),
                 ),
-              ),
-              const SizedBox(width: 14),
-              // ── Icono ────────────────────────────────────────────────
-              Container(
-                width: 40,
-                height: 40,
-                decoration: BoxDecoration(
-                  color: _accent.withValues(alpha: 0.15),
-                  borderRadius: BorderRadius.circular(10),
+                const SizedBox(width: 12),
+                // ── Textos ───────────────────────────────────────────────
+                Expanded(
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          'Partida sin terminar',
+                          style: theme.textTheme.titleMedium?.copyWith(
+                            fontWeight: FontWeight.bold,
+                            color: isDark ? Colors.white : AppColors.slate700,
+                          ),
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          session.mode.label,
+                          style: theme.textTheme.bodyLarge?.copyWith(
+                            color: _accent,
+                            fontWeight: FontWeight.w600,
+                          ),
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        const SizedBox(height: 1),
+                        Text(
+                          _detail,
+                          style: theme.textTheme.bodySmall?.copyWith(
+                            color: theme.colorScheme.onSurfaceVariant,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
                 ),
-                child: const Icon(
-                  Icons.history_rounded,
-                  color: _accent,
-                  size: 22,
-                ),
-              ),
-              const SizedBox(width: 12),
-              // ── Textos ───────────────────────────────────────────────
-              Expanded(
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 14),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+                // ── Botón continuar + descartar ──────────────────────────
+                Align(
+                  alignment: Alignment.center,
+                  child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       Text(
-                        'Partida sin terminar',
-                        style: theme.textTheme.titleMedium?.copyWith(
-                          fontWeight: FontWeight.bold,
-                          color: isDark ? Colors.white : AppColors.slate700,
-                        ),
-                      ),
-                      const SizedBox(height: 2),
-                      Text(
-                        session.mode.label,
-                        style: theme.textTheme.bodyLarge?.copyWith(
+                        'Continuar',
+                        style: theme.textTheme.labelSmall?.copyWith(
                           color: _accent,
-                          fontWeight: FontWeight.w600,
+                          fontWeight: FontWeight.bold,
                         ),
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
                       ),
-                      const SizedBox(height: 1),
-                      Text(
-                        _detail,
-                        style: theme.textTheme.bodySmall?.copyWith(
+                      const SizedBox(width: 2),
+                      const Icon(
+                        Icons.arrow_forward_ios_rounded,
+                        size: 12,
+                        color: _accent,
+                      ),
+                      const SizedBox(width: 4),
+                      IconButton(
+                        onPressed: onDismiss,
+                        icon: Icon(
+                          Icons.close_rounded,
+                          size: 18,
                           color: theme.colorScheme.onSurfaceVariant,
                         ),
+                        tooltip: 'Descartar',
+                        visualDensity: VisualDensity.compact,
+                        padding: const EdgeInsets.all(8),
                       ),
+                      const SizedBox(width: 4),
                     ],
                   ),
                 ),
-              ),
-              // ── Botón continuar + descartar ──────────────────────────
-              Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    'Continuar',
-                    style: theme.textTheme.labelSmall?.copyWith(
-                      color: _accent,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  const SizedBox(width: 2),
-                  const Icon(
-                    Icons.arrow_forward_ios_rounded,
-                    size: 12,
-                    color: _accent,
-                  ),
-                  const SizedBox(width: 4),
-                  IconButton(
-                    onPressed: onDismiss,
-                    icon: Icon(
-                      Icons.close_rounded,
-                      size: 18,
-                      color: theme.colorScheme.onSurfaceVariant,
-                    ),
-                    tooltip: 'Descartar',
-                    visualDensity: VisualDensity.compact,
-                    padding: const EdgeInsets.all(8),
-                  ),
-                  const SizedBox(width: 4),
-                ],
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),
