@@ -480,11 +480,16 @@ class _GamePlayPageState extends State<GamePlayPage>
                       SheetOption(
                         label: isCombined ? 'Reiniciar' : 'Limpiar',
                         onTap: () {
+                          final bloc = context.read<GameBloc>();
+                          // Misma grilla que el juego en curso, sin marcas — no usar
+                          // [args.cartones]: al continuar partida queda congelada la
+                          // instantánea del push y el bloc puede haber cambiado.
+                          final fresh = _freshCartonesUnmarked(bloc.state);
                           _clearSession();
-                          context.read<GameBloc>().add(const GameReset());
-                          context.read<GameBloc>().add(GameStarted(
+                          bloc.add(const GameReset());
+                          bloc.add(GameStarted(
                                 mode: args.mode,
-                                cartones: args.cartones,
+                                cartones: fresh,
                               ));
                         },
                       ),
