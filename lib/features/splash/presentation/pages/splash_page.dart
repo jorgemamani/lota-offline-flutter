@@ -63,20 +63,26 @@ class _SplashPageState extends State<SplashPage>
                 ),
                 const SizedBox(height: 10),
                 Text(
-                  AppBranding.displayTitle,
+                  AppBranding.shortName,
                   style: TextStyle(
                     fontSize: 40,
                     fontWeight: FontWeight.w900,
                     color: colors.onPrimary,
                     letterSpacing: 4,
                   ),
+                  textAlign: TextAlign.center,
                 ),
-                Text(
-                  AppBranding.tagline,
-                  style: TextStyle(
-                    fontSize: 14,
-                    color: colors.onPrimary.withValues(alpha: 0.75),
-                    letterSpacing: 2,
+                const SizedBox(height: 10),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 40),
+                  child: Text(
+                    AppBranding.tagline,
+                    style: TextStyle(
+                      fontSize: 16,
+                      color: colors.onPrimary.withValues(alpha: 0.75),
+                      letterSpacing: 2,
+                    ),
+                    textAlign: TextAlign.center,
                   ),
                 ),
               ],
