@@ -172,26 +172,91 @@ class _Header extends StatelessWidget {
               height: 60,
               fit: BoxFit.contain,
             ),
-            const SizedBox(width: 10),
-            Text(
-              'Lota Pue',
-              style: theme.textTheme.headlineLarge?.copyWith(
-                fontWeight: FontWeight.w900,
-                letterSpacing: 2,
+            const SizedBox(width: 8),
+            Expanded(
+              child: Text(
+                'Lota Pue - Bingo 90',
+                style: theme.textTheme.headlineMedium?.copyWith(
+                  fontWeight: FontWeight.w900,
+                  letterSpacing: 2,
+                ),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
               ),
             ),
-            const Spacer(),
-            IconButton(
-              tooltip: 'Acerca de la app',
-              onPressed: () => context.push(RouteNames.about),
-              icon: const Icon(Icons.info_outline_rounded),
-            ),
-            const SizedBox(width: 8),
-            const _ThemeToggle(),
           ],
         ),
-        const SizedBox(height: 4),
+        const SizedBox(height: 12),
+        _HeaderActionsBar(),
       ],
+    );
+  }
+}
+
+/// Acciones del encabezado (Acerca, tema, etc.). Agregar nuevos controles aquí.
+class _HeaderActionsBar extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return const Align(
+      alignment: Alignment.centerRight,
+      child: Wrap(
+        alignment: WrapAlignment.end,
+        spacing: 8,
+        runSpacing: 8,
+        children: [
+          _ThemeToggle(),
+          _AboutAppAction(),
+        ],
+      ),
+    );
+  }
+}
+
+/// Misma familia visual que [_ThemeToggle]: cápsula + control compacto.
+class _AboutAppAction extends StatelessWidget {
+  const _AboutAppAction();
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
+    return Tooltip(
+      message: 'Acerca de la app',
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: () => context.push(RouteNames.about),
+          borderRadius: BorderRadius.circular(14),
+          child: Ink(
+            padding: const EdgeInsets.all(4),
+            decoration: BoxDecoration(
+              color: theme.colorScheme.primaryContainer,
+              borderRadius: BorderRadius.circular(14),
+            ),
+            child: Padding(
+              padding: const EdgeInsets.all(8),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(
+                    Icons.info_outline_rounded,
+                    size: 20,
+                    color: theme.colorScheme.primary,
+                  ),
+                  const SizedBox(width: 4),
+                  Text(
+                    'Información',
+                    style: theme.textTheme.bodyMedium?.copyWith(
+                      color: theme.colorScheme.primary,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
     );
   }
 }
@@ -299,12 +364,6 @@ class _SessionRecoveryCard extends StatelessWidget {
 
   static const _accent = AppColors.statusWarning;
 
-  String get _subtitle => switch (session.mode) {
-        GameMode.markOnly => 'Marcar Cartón',
-        GameMode.bolilleroOnly => 'Bolillero',
-        GameMode.combined => 'Juego Completo',
-      };
-
   String get _detail {
     final drawn = session.drawnNumbers.length;
     return switch (session.mode) {
@@ -379,18 +438,20 @@ class _SessionRecoveryCard extends StatelessWidget {
                     children: [
                       Text(
                         'Partida sin terminar',
-                        style: theme.textTheme.titleSmall?.copyWith(
+                        style: theme.textTheme.titleMedium?.copyWith(
                           fontWeight: FontWeight.bold,
                           color: isDark ? Colors.white : AppColors.slate700,
                         ),
                       ),
                       const SizedBox(height: 2),
                       Text(
-                        _subtitle,
-                        style: theme.textTheme.bodySmall?.copyWith(
+                        session.mode.label,
+                        style: theme.textTheme.bodyLarge?.copyWith(
                           color: _accent,
                           fontWeight: FontWeight.w600,
                         ),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
                       ),
                       const SizedBox(height: 1),
                       Text(

@@ -9,15 +9,16 @@ const appReleases = <AppRelease>[
     version: '1.0.0',
     notes: [
       ReleaseNote(
-        title: 'Nuevos modos de juego',
-        description: 'Selecciona Marcar Carton, Bolillero o Juego Completo.',
+        title: 'Modos de juego',
+        description:
+            'Selecciona Marcar Cartones, Bolillero o Cartones + Bolillero.',
       ),
       ReleaseNote(
         title: 'Recuperacion de partida',
         description: 'Retoma automaticamente una partida no terminada.',
       ),
       ReleaseNote(
-        title: 'Mejor experiencia visual',
+        title: 'Experiencia visual',
         description:
             'Tema claro/oscuro/automatico y opcion para agrandar letras en cartones.',
       ),
