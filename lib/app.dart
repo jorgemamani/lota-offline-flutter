@@ -5,6 +5,7 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import 'dependency_injection.dart';
+import 'shared/constants/app_branding.dart';
 import 'shared/constants/app_colors.dart';
 import 'shared/constants/breakpoints.dart';
 import 'shared/extensions/build_context_extensions.dart';
@@ -49,7 +50,7 @@ class LotaApp extends StatelessWidget {
       child: BlocBuilder<ThemeCubit, ThemeMode>(
         builder: (context, themeMode) {
           final app = MaterialApp.router(
-            title: 'Lota Pue',
+            title: AppBranding.displayTitle,
             debugShowCheckedModeBanner: false,
             scaffoldMessengerKey: _scaffoldMessengerKey,
             theme: _buildTheme(Brightness.light),

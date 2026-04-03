@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../../routing/route_names.dart';
 import '../../../../shared/constants/app_assets.dart';
+import '../../../../shared/constants/app_branding.dart';
 import '../../../../shared/widgets/image_component.dart';
 
 class SplashPage extends StatefulWidget {
@@ -62,7 +63,7 @@ class _SplashPageState extends State<SplashPage>
                 ),
                 const SizedBox(height: 10),
                 Text(
-                  'Lota Pue',
+                  AppBranding.displayTitle,
                   style: TextStyle(
                     fontSize: 40,
                     fontWeight: FontWeight.w900,
@@ -71,7 +72,7 @@ class _SplashPageState extends State<SplashPage>
                   ),
                 ),
                 Text(
-                  'Bingo 90 Argentino',
+                  AppBranding.tagline,
                   style: TextStyle(
                     fontSize: 14,
                     color: colors.onPrimary.withValues(alpha: 0.75),

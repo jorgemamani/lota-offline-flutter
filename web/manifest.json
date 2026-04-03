@@ -1,11 +1,11 @@
 {
-    "name": "Lota Pue",
+    "name": "Lota Pue - Bingo 90",
     "short_name": "Lota Pue",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#00000000",
     "theme_color": "#2563EB",
-    "description": "Lota — Bingo 90 Argentino",
+    "description": "Lota — Bingo 90 estilo argentino, para jugar offline (no requiere conexión a internet).",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
     "icons": [

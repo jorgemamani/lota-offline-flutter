@@ -1,5 +1,5 @@
 name: lota_offline
-description: Lota — Bingo 90 Argentino. App offline para jugar Lota Argentina.
+description: Lota — Bingo 90 estilo argentino, para jugar offline (no requiere conexión a internet).
 publish_to: "none"
 
 version: 1.0.0+1

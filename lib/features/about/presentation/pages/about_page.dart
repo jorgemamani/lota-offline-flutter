@@ -6,6 +6,7 @@ import 'package:url_launcher/url_launcher.dart';
 import '../../data/app_releases.dart';
 import '../../domain/models/app_release.dart';
 import '../../domain/models/release_note.dart';
+import '../../../../shared/constants/app_branding.dart';
 import '../../../../shared/managers/alert_manager.dart';
 
 class AboutPage extends StatelessWidget {
@@ -28,14 +29,14 @@ class AboutPage extends StatelessWidget {
           padding: const EdgeInsets.all(24),
           children: [
             Text(
-              'Lota Pue',
+              AppBranding.displayTitle,
               style: theme.textTheme.headlineSmall?.copyWith(
                 fontWeight: FontWeight.w700,
               ),
             ),
             const SizedBox(height: 8),
             Text(
-              'Bingo 90 Argentino',
+              AppBranding.tagline,
               style: theme.textTheme.bodyLarge?.copyWith(
                 color: theme.colorScheme.onSurfaceVariant,
               ),

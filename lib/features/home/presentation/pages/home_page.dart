@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../../routing/route_names.dart';
 import '../../../../shared/constants/app_assets.dart';
+import '../../../../shared/constants/app_branding.dart';
 import '../../../../shared/constants/app_colors.dart';
 import '../../../../shared/managers/alert_manager.dart';
 import '../../../../shared/widgets/image_component.dart';
@@ -175,7 +176,7 @@ class _Header extends StatelessWidget {
             const SizedBox(width: 8),
             Expanded(
               child: Text(
-                'Lota Pue - Bingo 90',
+                AppBranding.displayTitle,
                 style: theme.textTheme.headlineMedium?.copyWith(
                   fontWeight: FontWeight.w900,
                   letterSpacing: 2,
