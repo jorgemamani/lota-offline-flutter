@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import 'scrollable_bottom_sheet_body.dart';
+
 // ── Modelos ───────────────────────────────────────────────────────────────────
 
 /// Estilo visual del botón de una [SheetOption].
@@ -90,33 +92,35 @@ class ConfirmBottomSheet extends StatelessWidget {
 
     return Padding(
       padding: const EdgeInsets.fromLTRB(24, 12, 24, 24),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          const _DragHandle(),
-          const SizedBox(height: 20),
-          Text(
-            title,
-            style: theme.textTheme.titleMedium?.copyWith(
-              fontWeight: FontWeight.w600,
+      child: ScrollableBottomSheetBody(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            const _DragHandle(),
+            const SizedBox(height: 20),
+            Text(
+              title,
+              style: theme.textTheme.titleMedium?.copyWith(
+                fontWeight: FontWeight.w600,
+              ),
             ),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            description,
-            style: theme.textTheme.bodyMedium?.copyWith(
-              color: theme.colorScheme.onSurfaceVariant,
+            const SizedBox(height: 8),
+            Text(
+              description,
+              style: theme.textTheme.bodyMedium?.copyWith(
+                color: theme.colorScheme.onSurfaceVariant,
+              ),
             ),
-          ),
-          const SizedBox(height: 24),
-          ...options.map(
-            (option) => Padding(
-              padding: const EdgeInsets.only(bottom: 8),
-              child: _OptionButton(option: option),
+            const SizedBox(height: 24),
+            ...options.map(
+              (option) => Padding(
+                padding: const EdgeInsets.only(bottom: 8),
+                child: _OptionButton(option: option),
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

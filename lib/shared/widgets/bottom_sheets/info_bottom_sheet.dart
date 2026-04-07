@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import 'scrollable_bottom_sheet_body.dart';
+
 /// Bottom sheet informativo.
 ///
 /// Muestra un ícono opcional, un título y un mensaje descriptivo.
@@ -37,39 +39,41 @@ class InfoBottomSheet extends StatelessWidget {
 
     return Padding(
       padding: const EdgeInsets.fromLTRB(24, 12, 24, 24),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          const _DragHandle(),
-          if (icon != null) ...[
-            const SizedBox(height: 20),
-            Icon(icon, size: 44, color: theme.colorScheme.primary),
+      child: ScrollableBottomSheetBody(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const _DragHandle(),
+            if (icon != null) ...[
+              const SizedBox(height: 20),
+              Icon(icon, size: 44, color: theme.colorScheme.primary),
+            ],
+            const SizedBox(height: 16),
+            Text(
+              title,
+              style: theme.textTheme.titleMedium?.copyWith(
+                fontWeight: FontWeight.w600,
+              ),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 8),
+            Text(
+              message,
+              style: theme.textTheme.bodyMedium?.copyWith(
+                color: theme.colorScheme.onSurfaceVariant,
+              ),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 28),
+            FilledButton(
+              onPressed: () => Navigator.of(context).pop(),
+              style: FilledButton.styleFrom(
+                minimumSize: const Size.fromHeight(44),
+              ),
+              child: Text(closeLabel),
+            ),
           ],
-          const SizedBox(height: 16),
-          Text(
-            title,
-            style: theme.textTheme.titleMedium?.copyWith(
-              fontWeight: FontWeight.w600,
-            ),
-            textAlign: TextAlign.center,
-          ),
-          const SizedBox(height: 8),
-          Text(
-            message,
-            style: theme.textTheme.bodyMedium?.copyWith(
-              color: theme.colorScheme.onSurfaceVariant,
-            ),
-            textAlign: TextAlign.center,
-          ),
-          const SizedBox(height: 28),
-          FilledButton(
-            onPressed: () => Navigator.of(context).pop(),
-            style: FilledButton.styleFrom(
-              minimumSize: const Size.fromHeight(44),
-            ),
-            child: Text(closeLabel),
-          ),
-        ],
+        ),
       ),
     );
   }

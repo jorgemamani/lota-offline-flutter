@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../shared/constants/carton_display_scale.dart';
+import '../../../../shared/widgets/bottom_sheets/scrollable_bottom_sheet_body.dart';
 import '../cubit/carton_display_scale_cubit.dart';
 
 /// Bottom sheet para ajustar el tamaño de los números en los cartones.
@@ -16,14 +17,16 @@ class CartonDisplayScaleSheet {
     final theme = Theme.of(context);
     return showModalBottomSheet<void>(
       context: context,
+      isScrollControlled: true,
+      useSafeArea: true,
       showDragHandle: true,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
       builder: (ctx) {
-        return SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.fromLTRB(24, 8, 24, 24),
+        return Padding(
+          padding: const EdgeInsets.fromLTRB(24, 8, 24, 24),
+          child: ScrollableBottomSheetBody(
             child: BlocBuilder<CartonDisplayScaleCubit, int>(
               builder: (context, step) {
                 return Column(

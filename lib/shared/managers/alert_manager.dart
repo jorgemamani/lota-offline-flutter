@@ -248,6 +248,7 @@ abstract final class AlertManager {
 
     return showModalBottomSheet<void>(
       context: context,
+      isScrollControlled: true,
       useSafeArea: true,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
@@ -306,6 +307,7 @@ abstract final class AlertManager {
 
     return showModalBottomSheet<void>(
       context: context,
+      isScrollControlled: true,
       useSafeArea: true,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
