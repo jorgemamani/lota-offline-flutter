@@ -40,15 +40,19 @@ class InfoBottomSheet extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.fromLTRB(24, 12, 24, 24),
       child: ScrollableBottomSheetBody(
-        child: Column(
+        fixedHeader: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             const _DragHandle(),
-            if (icon != null) ...[
-              const SizedBox(height: 20),
+            SizedBox(height: icon != null ? 20 : 16),
+          ],
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            if (icon != null)
               Icon(icon, size: 44, color: theme.colorScheme.primary),
-            ],
-            const SizedBox(height: 16),
+            if (icon != null) const SizedBox(height: 16),
             Text(
               title,
               style: theme.textTheme.titleMedium?.copyWith(

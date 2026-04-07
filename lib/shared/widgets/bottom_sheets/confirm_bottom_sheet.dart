@@ -93,12 +93,17 @@ class ConfirmBottomSheet extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.fromLTRB(24, 12, 24, 24),
       child: ScrollableBottomSheetBody(
+        fixedHeader: const Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            _DragHandle(),
+            SizedBox(height: 20),
+          ],
+        ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            const _DragHandle(),
-            const SizedBox(height: 20),
             Text(
               title,
               style: theme.textTheme.titleMedium?.copyWith(
