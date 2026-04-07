@@ -576,9 +576,9 @@ class _GamePlayPageState extends State<GamePlayPage>
                           _clearSession();
                           bloc.add(const GameReset());
                           bloc.add(GameStarted(
-                                mode: args.mode,
-                                cartones: fresh,
-                              ));
+                            mode: args.mode,
+                            cartones: fresh,
+                          ));
                         },
                       ),
                       SheetOption(
@@ -715,38 +715,175 @@ class _GamePlayPageState extends State<GamePlayPage>
       ),
       builder: (sheetContext) => BlocProvider.value(
         value: context.read<GameBloc>(),
-        child: DraggableScrollableSheet(
-          expand: false,
-          initialChildSize: 0.75,
-          maxChildSize: 0.95,
-          minChildSize: 0.5,
-          builder: (_, scrollController) => SingleChildScrollView(
-            controller: scrollController,
-            padding: const EdgeInsets.fromLTRB(20, 12, 20, 24),
-            child: Column(
-              children: [
-                Container(
-                  width: 40,
-                  height: 4,
-                  margin: const EdgeInsets.only(bottom: 20),
-                  decoration: BoxDecoration(
-                    color: Theme.of(context).colorScheme.outlineVariant,
-                    borderRadius: BorderRadius.circular(2),
-                  ),
-                ),
-                Text(
-                  'Bolillero',
-                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                        fontWeight: FontWeight.bold,
-                      ),
-                ),
-                const SizedBox(height: 20),
-                const BolilleroWidget(showReiniciarSorteo: false),
-              ],
-            ),
-          ),
-        ),
+        child: const _BolilleroCombinedBottomSheet(),
       ),
+    );
+  }
+}
+
+/// Sheet del bolillero en [GameMode.combined]: colapsado muestra historial y acciones
+/// sin grilla 1–90; expandido, grilla completa con scroll si hace falta;
+/// otro gesto hacia abajo desde colapsado cierra el modal.
+class _BolilleroCombinedBottomSheet extends StatefulWidget {
+  const _BolilleroCombinedBottomSheet();
+
+  @override
+  State<_BolilleroCombinedBottomSheet> createState() =>
+      _BolilleroCombinedBottomSheetState();
+}
+
+class _BolilleroCombinedBottomSheetState
+    extends State<_BolilleroCombinedBottomSheet> {
+  static const double _maxChildFraction = 0.8;
+
+  static const _hintCollapsed =
+      'Deslizá hacia arriba para ver todos los números (1–90).';
+  static const _hintExpanded =
+      'Deslizá hacia abajo para achicar u ocultar la grilla.';
+
+  late final DraggableScrollableController _sheetController;
+  bool _popped = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _sheetController = DraggableScrollableController();
+    _sheetController.addListener(_maybePopWhenHidden);
+  }
+
+  void _maybePopWhenHidden() {
+    if (_popped || !mounted || !_sheetController.isAttached) return;
+    if (_sheetController.size < 0.05) {
+      _popped = true;
+      Navigator.of(context).pop();
+    }
+  }
+
+  @override
+  void dispose() {
+    _sheetController.removeListener(_maybePopWhenHidden);
+    _sheetController.dispose();
+    super.dispose();
+  }
+
+  /// Altura del peek: handle, bloque título + ayuda, historial, fila principal.
+  double _peekFraction(MediaQueryData mq) {
+    final screenH = mq.size.height;
+    if (screenH <= 0) return 0.4;
+    final safeBottom = mq.padding.bottom;
+    final textFactor = mq.textScaler.scale(14) / 14;
+    const topPad = 12.0;
+    const handleTotal = 16.0;
+    const titleLine = 22.0;
+    const gapTitleHint = 4.0;
+    const hintBlock = 30.0;
+    const afterHeader = 10.0;
+    const history = 78.0;
+    const gap1 = 16.0;
+    const mainRow = 132.0;
+    const bottomPad = 24.0;
+    final headerH = (titleLine + gapTitleHint + hintBlock) * textFactor;
+    final peekH = topPad +
+        handleTotal +
+        headerH +
+        afterHeader +
+        history +
+        gap1 +
+        mainRow +
+        bottomPad +
+        safeBottom +
+        8;
+    return (peekH / screenH).clamp(0.18, 0.52);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final mq = MediaQuery.of(context);
+    final peek = _peekFraction(mq);
+    final theme = Theme.of(context);
+
+    return DraggableScrollableSheet(
+      controller: _sheetController,
+      expand: false,
+      minChildSize: 0,
+      maxChildSize: _maxChildFraction,
+      initialChildSize: peek,
+      snap: true,
+      snapSizes: [0, peek, _maxChildFraction],
+      builder: (context, scrollController) {
+        return AnimatedBuilder(
+          animation: _sheetController,
+          builder: (context, _) {
+            final midpoint = (peek + _maxChildFraction) / 2;
+            final fullGrid =
+                _sheetController.isAttached && _sheetController.size > midpoint;
+            final hint = fullGrid ? _hintExpanded : _hintCollapsed;
+
+            return Padding(
+              padding: const EdgeInsets.fromLTRB(20, 12, 20, 24),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Center(
+                    child: Container(
+                      width: 40,
+                      height: 4,
+                      margin: const EdgeInsets.only(bottom: 12),
+                      decoration: BoxDecoration(
+                        color: theme.colorScheme.outlineVariant,
+                        borderRadius: BorderRadius.circular(2),
+                      ),
+                    ),
+                  ),
+                  Expanded(
+                    child: LayoutBuilder(
+                      builder: (context, scrollViewport) {
+                        return SingleChildScrollView(
+                          controller: scrollController,
+                          child: ConstrainedBox(
+                            constraints: BoxConstraints(
+                              minHeight: scrollViewport.maxHeight,
+                            ),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.stretch,
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Text(
+                                  'Bolillero',
+                                  textAlign: TextAlign.center,
+                                  style: theme.textTheme.titleMedium?.copyWith(
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  hint,
+                                  textAlign: TextAlign.center,
+                                  maxLines: 2,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: theme.textTheme.labelSmall?.copyWith(
+                                    color: theme.colorScheme.onSurfaceVariant,
+                                    height: 1.25,
+                                  ),
+                                ),
+                                const SizedBox(height: 10),
+                                BolilleroWidget(
+                                  showReiniciarSorteo: false,
+                                  show90Grid: fullGrid,
+                                ),
+                              ],
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                ],
+              ),
+            );
+          },
+        );
+      },
     );
   }
 }
@@ -791,22 +928,19 @@ class _GameBody extends StatelessWidget {
                     children: [
                       Text(
                         'Cartón ${index + 1}',
-                        style:
-                            Theme.of(context).textTheme.titleSmall?.copyWith(
-                                  fontWeight: FontWeight.bold,
-                                  color: accentColor,
-                                ),
+                        style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                              fontWeight: FontWeight.bold,
+                              color: accentColor,
+                            ),
                       ),
                       Text(
                         '${carton.markedCount} / ${carton.totalNumbers}',
-                        style: Theme.of(context)
-                            .textTheme
-                            .labelMedium
-                            ?.copyWith(
-                              color: Theme.of(context)
-                                  .colorScheme
-                                  .onSurfaceVariant,
-                            ),
+                        style:
+                            Theme.of(context).textTheme.labelMedium?.copyWith(
+                                  color: Theme.of(context)
+                                      .colorScheme
+                                      .onSurfaceVariant,
+                                ),
                       ),
                     ],
                   ),

@@ -10,7 +10,8 @@ import '../../../game/presentation/bloc/game_bloc.dart';
 /// Widget reutilizable que muestra el bolillero.
 ///
 /// Se usa en [BolilleroPage] (standalone) y en el sheet de [GamePlayPage]
-/// (modo combined). En combined, [showReiniciarSorteo] va en `false`.
+/// (modo combined). En combined: [showReiniciarSorteo] en `false` y
+/// [show90Grid] en `false` si el sheet está colapsado (sin grilla 1–90).
 ///
 /// [extraActionButtons]: acciones extra entre «Reiniciar sorteo» y «Sacar número»
 /// (mismo ancho, lista vertical) para futuras funciones.
@@ -23,6 +24,7 @@ class BolilleroWidget extends StatelessWidget {
     this.showReiniciarSorteo = true,
     this.onReiniciarPressed,
     this.extraActionButtons = const [],
+    this.show90Grid = true,
   });
 
   /// Si es `false` (p. ej. juego combinado), no se muestra «Reiniciar sorteo».
@@ -34,6 +36,9 @@ class BolilleroWidget extends StatelessWidget {
 
   /// Acciones extra en la columna derecha, entre reiniciar y «Sacar número».
   final List<Widget> extraActionButtons;
+
+  /// Si es `false`, no se muestra la cuadrícula 1–90 (sheet combinado colapsado).
+  final bool show90Grid;
 
   @override
   Widget build(BuildContext context) {
@@ -69,8 +74,10 @@ class BolilleroWidget extends StatelessWidget {
               hasDrawnNumbers: drawn.isNotEmpty,
               extraActionButtons: extraActionButtons,
             ),
-            const SizedBox(height: 20),
-            _DrawnGrid(drawn: drawn),
+            if (show90Grid) ...[
+              const SizedBox(height: 20),
+              _DrawnGrid(drawn: drawn),
+            ],
           ],
         );
       },
