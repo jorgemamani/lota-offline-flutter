@@ -710,6 +710,7 @@ class _GamePlayPageState extends State<GamePlayPage>
       context: context,
       isScrollControlled: true,
       useSafeArea: true,
+      backgroundColor: Colors.transparent,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
@@ -801,89 +802,101 @@ class _BolilleroCombinedBottomSheetState
     final mq = MediaQuery.of(context);
     final peek = _peekFraction(mq);
     final theme = Theme.of(context);
+    // Deja entrever los cartones detrás; textos y celdas siguen con sus colores del tema.
+    final sheetBackground = theme.colorScheme.surface.withValues(alpha: 0.75);
 
-    return DraggableScrollableSheet(
-      controller: _sheetController,
-      expand: false,
-      minChildSize: 0,
-      maxChildSize: _maxChildFraction,
-      initialChildSize: peek,
-      snap: true,
-      snapSizes: [0, peek, _maxChildFraction],
-      builder: (context, scrollController) {
-        return AnimatedBuilder(
-          animation: _sheetController,
-          builder: (context, _) {
-            final midpoint = (peek + _maxChildFraction) / 2;
-            final fullGrid =
-                _sheetController.isAttached && _sheetController.size > midpoint;
-            final hint = fullGrid ? _hintExpanded : _hintCollapsed;
+    return ClipRRect(
+      borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+      child: ColoredBox(
+        color: sheetBackground,
+        child: DraggableScrollableSheet(
+          controller: _sheetController,
+          expand: false,
+          minChildSize: 0,
+          maxChildSize: _maxChildFraction,
+          initialChildSize: peek,
+          snap: true,
+          snapSizes: [0, peek, _maxChildFraction],
+          builder: (context, scrollController) {
+            return AnimatedBuilder(
+              animation: _sheetController,
+              builder: (context, _) {
+                final midpoint = (peek + _maxChildFraction) / 2;
+                final fullGrid = _sheetController.isAttached &&
+                    _sheetController.size > midpoint;
+                final hint = fullGrid ? _hintExpanded : _hintCollapsed;
 
-            return Padding(
-              padding: const EdgeInsets.fromLTRB(20, 12, 20, 24),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  Center(
-                    child: Container(
-                      width: 40,
-                      height: 4,
-                      margin: const EdgeInsets.only(bottom: 12),
-                      decoration: BoxDecoration(
-                        color: theme.colorScheme.outlineVariant,
-                        borderRadius: BorderRadius.circular(2),
-                      ),
-                    ),
-                  ),
-                  Expanded(
-                    child: LayoutBuilder(
-                      builder: (context, scrollViewport) {
-                        return SingleChildScrollView(
-                          controller: scrollController,
-                          child: ConstrainedBox(
-                            constraints: BoxConstraints(
-                              minHeight: scrollViewport.maxHeight,
-                            ),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.stretch,
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Text(
-                                  'Bolillero',
-                                  textAlign: TextAlign.center,
-                                  style: theme.textTheme.titleMedium?.copyWith(
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                                const SizedBox(height: 4),
-                                Text(
-                                  hint,
-                                  textAlign: TextAlign.center,
-                                  maxLines: 2,
-                                  overflow: TextOverflow.ellipsis,
-                                  style: theme.textTheme.labelSmall?.copyWith(
-                                    color: theme.colorScheme.onSurfaceVariant,
-                                    height: 1.25,
-                                  ),
-                                ),
-                                const SizedBox(height: 10),
-                                BolilleroWidget(
-                                  showReiniciarSorteo: false,
-                                  show90Grid: fullGrid,
-                                ),
-                              ],
-                            ),
+                return Padding(
+                  padding: const EdgeInsets.fromLTRB(20, 12, 20, 24),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      Center(
+                        child: Container(
+                          width: 40,
+                          height: 4,
+                          margin: const EdgeInsets.only(bottom: 12),
+                          decoration: BoxDecoration(
+                            color: theme.colorScheme.outlineVariant,
+                            borderRadius: BorderRadius.circular(2),
                           ),
-                        );
-                      },
-                    ),
+                        ),
+                      ),
+                      Expanded(
+                        child: LayoutBuilder(
+                          builder: (context, scrollViewport) {
+                            return SingleChildScrollView(
+                              controller: scrollController,
+                              child: ConstrainedBox(
+                                constraints: BoxConstraints(
+                                  minHeight: scrollViewport.maxHeight,
+                                ),
+                                child: Column(
+                                  crossAxisAlignment:
+                                      CrossAxisAlignment.stretch,
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Text(
+                                      'Bolillero',
+                                      textAlign: TextAlign.center,
+                                      style:
+                                          theme.textTheme.titleMedium?.copyWith(
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 4),
+                                    Text(
+                                      hint,
+                                      textAlign: TextAlign.center,
+                                      maxLines: 2,
+                                      overflow: TextOverflow.ellipsis,
+                                      style:
+                                          theme.textTheme.labelSmall?.copyWith(
+                                        color:
+                                            theme.colorScheme.onSurfaceVariant,
+                                        height: 1.25,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 10),
+                                    BolilleroWidget(
+                                      showReiniciarSorteo: false,
+                                      show90Grid: fullGrid,
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            );
+                          },
+                        ),
+                      ),
+                    ],
                   ),
-                ],
-              ),
+                );
+              },
             );
           },
-        );
-      },
+        ),
+      ),
     );
   }
 }
