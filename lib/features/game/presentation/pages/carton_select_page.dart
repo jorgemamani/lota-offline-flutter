@@ -48,6 +48,10 @@ class _CartonSelectPageState extends State<CartonSelectPage>
   bool _isLoadingMore = false;
   final _random = Random();
 
+  /// Desplazamiento 0-based en [LotaCardColors.all] para el 1.er cartón cargado;
+  /// se elige una sola vez al entrar (aleatorio), luego los colores ciclan en orden.
+  int? _paletteCycleStart;
+
   // ── Selección para iniciar partida (compartida entre tabs) ────────
   /// Mapa de id → modelo: usa el content-hash para favoritos y el id
   /// de sesión para los cartones del tab "Todos".
@@ -92,9 +96,15 @@ class _CartonSelectPageState extends State<CartonSelectPage>
     setState(() => _isLoadingMore = true);
     final newCards = sl<CartonManager>().generateCards(toLoad);
     const palette = LotaCardColors.all;
+    final n = palette.length;
     setState(() {
-      for (final card in newCards) {
-        _cardColors[card.id] = palette[_random.nextInt(palette.length)];
+      _paletteCycleStart ??= _random.nextInt(n);
+      final start = _paletteCycleStart!;
+      final baseIndex = _available.length;
+      for (var i = 0; i < newCards.length; i++) {
+        final card = newCards[i];
+        final paletteIndex = (baseIndex + i + start) % n;
+        _cardColors[card.id] = palette[paletteIndex];
       }
       _available.addAll(newCards);
       _isLoadingMore = false;

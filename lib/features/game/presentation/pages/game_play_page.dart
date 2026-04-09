@@ -557,7 +557,7 @@ class _GamePlayPageState extends State<GamePlayPage>
                 if (state is GameIdle) return const SizedBox.shrink();
                 final isCombined = args.mode == GameMode.combined;
                 return IconButton(
-                  icon: const Icon(Icons.restart_alt_rounded),
+                  icon: const Icon(Icons.cleaning_services_rounded),
                   tooltip: isCombined ? 'Reiniciar juego' : 'Limpiar marcas',
                   onPressed: () => AlertManager.showConfirmSheet(
                     title: isCombined ? 'Reiniciar juego' : 'Limpiar marcas',
@@ -803,7 +803,7 @@ class _BolilleroCombinedBottomSheetState
     final peek = _peekFraction(mq);
     final theme = Theme.of(context);
     // Deja entrever los cartones detrás; textos y celdas siguen con sus colores del tema.
-    final sheetBackground = theme.colorScheme.surface.withValues(alpha: 0.75);
+    final sheetBackground = theme.colorScheme.surface.withValues(alpha: 0.9);
 
     return ClipRRect(
       borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),

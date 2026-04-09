@@ -51,6 +51,7 @@ class LotaCardColors {
     onPrimary: Colors.white,
   );
 
-  /// Lista completa — se usa para asignar colores al azar a los cartones.
+  /// Orden fijo de la paleta: al elegir cartones nuevos se recorre en ciclo
+  /// (1→2→…→n→1…) con un índice de inicio aleatorio por pantalla de selección.
   static const all = [blue, indigo, violet, teal, emerald, rose, amber, slate];
 }
