@@ -126,7 +126,7 @@ class AboutPage extends StatelessWidget {
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    'Desarrollador Flutter',
+                    'Mobile Developer (Senior)',
                     style: theme.textTheme.bodyMedium?.copyWith(
                       color: theme.colorScheme.onSurfaceVariant,
                     ),

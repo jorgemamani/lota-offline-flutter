@@ -10,5 +10,5 @@ abstract final class AppBranding {
 
   /// Descripción breve para manifest / meta (opcional).
   static const tagline =
-      'Lota - Bingo 90 estilo argentino, para jugar offline (no requiere conexión a internet).';
+      'Lota, loteria, bingo 90 estilo argentino.\nJuego offline (no requiere conexión a internet).';
 }
