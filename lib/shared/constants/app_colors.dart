@@ -55,6 +55,9 @@ abstract final class AppColors {
   static const amber800 = Color(0xFFFF8F00);
   static const amberBg  = Color(0xFFFFF8E1);
 
+  // ── Yellow ───────────────────────────────────────────────────────────────
+  static const yellow600 = Color(0xFFCA8A04);
+
   // ── Red ──────────────────────────────────────────────────────────────────
   static const red600 = Color(0xFFDC2626);
 

@@ -50,8 +50,28 @@ class LotaCardColors {
     primary: AppColors.slate600,
     onPrimary: Colors.white,
   );
+  static const red = LotaCardColor(
+    primary: AppColors.red600,
+    onPrimary: Colors.white,
+  );
+  static const yellow = LotaCardColor(
+    primary: AppColors.yellow600,
+    onPrimary: Colors.white,
+  );
 
   /// Orden fijo de la paleta: al elegir cartones nuevos se recorre en ciclo
   /// (1→2→…→n→1…) con un índice de inicio aleatorio por pantalla de selección.
-  static const all = [blue, indigo, violet, teal, emerald, rose, amber, slate];
+  /// Nuevos tonos al final para no alterar índices persistidos (favoritos / sesión).
+  static const all = [
+    blue,
+    indigo,
+    violet,
+    teal,
+    emerald,
+    rose,
+    amber,
+    slate,
+    red,
+    yellow,
+  ];
 }
