@@ -557,7 +557,14 @@ class _GamePlayPageState extends State<GamePlayPage>
                 if (state is GameIdle) return const SizedBox.shrink();
                 final isCombined = args.mode == GameMode.combined;
                 return IconButton(
-                  icon: const Icon(Icons.cleaning_services_rounded),
+                  icon: ImageComponent(
+                    imagePath: AppAssets.gameCleanMarksIcon,
+                    width: 30,
+                    height: 30,
+                    fit: BoxFit.contain,
+                    color: IconTheme.of(context).color ??
+                        Theme.of(context).colorScheme.onSurface,
+                  ),
                   tooltip: isCombined ? 'Reiniciar juego' : 'Limpiar marcas',
                   onPressed: () => AlertManager.showConfirmSheet(
                     title: isCombined ? 'Reiniciar juego' : 'Limpiar marcas',

@@ -65,3 +65,4 @@ flutter:
     - .env.prod
     - assets/images/logo/
     - assets/images/game_modes/
+    - assets/images/icons/

@@ -12,4 +12,7 @@ abstract final class AppAssets {
   static const gameModeMarkCarton = 'assets/images/game_modes/mark_carton_mode.png';
   static const gameModeBolillero = 'assets/images/game_modes/bolillero_mode.png';
   static const gameModeCombined = 'assets/images/game_modes/combined_mode.png';
+
+  // ── Juego (barra de acciones) ───────────────────────────────────────────────
+  static const gameCleanMarksIcon = 'assets/images/icons/clean_marks_icon.png';
 }
