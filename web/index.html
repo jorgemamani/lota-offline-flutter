@@ -43,9 +43,21 @@
       margin: 0;
       padding: 0;
       overflow: hidden;
-      /* Evita el fondo gris al rotar o hacer zoom en móviles */
-      background-color: #ffffff;
+      background-color: #fef7ff;
       touch-action: pan-x pan-y;
+    }
+
+    /* Evita el destello gris del canvas de Flutter durante resize / rotación.
+       flt-glass-pane es el contenedor raíz del renderer CanvasKit/Skwasm. */
+    flt-glass-pane {
+      background-color: transparent !important;
+    }
+
+    /* Fondo oscuro para modo dark del sistema (prefers-color-scheme) */
+    @media (prefers-color-scheme: dark) {
+      html, body {
+        background-color: #141218;
+      }
     }
   </style>
 </head>

@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -8,7 +9,6 @@ import 'dependency_injection.dart';
 import 'shared/constants/app_branding.dart';
 import 'shared/constants/app_colors.dart';
 import 'shared/constants/breakpoints.dart';
-import 'shared/extensions/build_context_extensions.dart';
 import 'features/game/presentation/bloc/game_bloc.dart';
 import 'features/game/presentation/cubit/carton_display_scale_cubit.dart';
 import 'features/game/presentation/cubit/favorites_cubit.dart';
@@ -34,10 +34,6 @@ class LotaApp extends StatelessWidget {
       scaffoldMessengerKey: _scaffoldMessengerKey,
       navigatorKey: rootNavigatorKey,
     );
-
-    // En web con pantalla ancha, centra la app en un frame de ancho fijo
-    // para preservar la experiencia móvil (≈ 1/3 del ancho de escritorio).
-    final frameWidth = context.isWeb ? Breakpoints.mobileFrame : null;
 
     return MultiBlocProvider(
       providers: [
@@ -67,19 +63,34 @@ class LotaApp extends StatelessWidget {
             locale: const Locale('es'),
           );
 
-          if (frameWidth == null) return app;
+          // En plataformas nativas no se necesita el frame centrado.
+          if (!kIsWeb) return app;
 
-          // Web: fondo con el color de la app, frame centrado
+          // Web: mantiene SIEMPRE la misma estructura de árbol
+          // (Container → LayoutBuilder → SizedBox → app) para que
+          // MaterialApp.router nunca se desmonte al cambiar el tamaño
+          // del viewport (zoom / rotación), lo que causaba pantalla gris.
+          // LayoutBuilder ajusta solo el ancho del SizedBox sin tocar app.
+          final platformBrightness =
+              MediaQuery.platformBrightnessOf(context);
+          final effectiveBrightness = switch (themeMode) {
+            ThemeMode.light => Brightness.light,
+            ThemeMode.dark => Brightness.dark,
+            ThemeMode.system => platformBrightness,
+          };
+          final surfaceColor =
+              _buildTheme(effectiveBrightness).colorScheme.surface;
+
           return Container(
-            color: _buildTheme(themeMode == ThemeMode.dark
-                    ? Brightness.dark
-                    : Brightness.light)
-                .colorScheme
-                .surface,
+            color: surfaceColor,
             alignment: Alignment.center,
-            child: SizedBox(
-              width: frameWidth,
-              child: app,
+            child: LayoutBuilder(
+              builder: (_, constraints) {
+                final width = constraints.maxWidth > Breakpoints.mobileFrame
+                    ? Breakpoints.mobileFrame
+                    : constraints.maxWidth;
+                return SizedBox(width: width, child: app);
+              },
             ),
           );
         },
