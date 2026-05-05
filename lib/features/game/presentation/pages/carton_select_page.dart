@@ -198,36 +198,10 @@ class _CartonSelectPageState extends State<CartonSelectPage>
               onPressed: () => CartonDisplayScaleSheet.show(context),
             ),
           ],
-          bottom: TabBar(
-            controller: _tabController,
-            tabs: const [
-              Tab(
-                height: 40,
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(Icons.grid_view_rounded, size: 16),
-                    SizedBox(width: 6),
-                    Text('Todos'),
-                  ],
-                ),
-              ),
-              Tab(
-                height: 40,
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(Icons.star_rounded, size: 16),
-                    SizedBox(width: 6),
-                    Text('Favoritos'),
-                  ],
-                ),
-              ),
-            ],
-          ),
         ),
         body: Column(
           children: [
+            _SegmentedTabBar(controller: _tabController),
             _InfoBar(selectedCount: selectedCount, maxSelection: _maxSelection),
             Expanded(
               child: TabBarView(
@@ -264,6 +238,144 @@ class _CartonSelectPageState extends State<CartonSelectPage>
                     : 'Comenzar con $selectedCount cartón(es)',
               ),
             ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+// ── Segmented Tab Bar ─────────────────────────────────────────────────────
+
+/// Control segmentado tipo píldora que reemplaza al [TabBar] estándar.
+///
+/// Mantiene la misma semántica que [TabBar] pero con un estilo compacto
+/// y visual idéntico al [_ThemeToggle] del home, respetando la paleta de
+/// colores del tema en modo claro y oscuro.
+class _SegmentedTabBar extends StatefulWidget {
+  const _SegmentedTabBar({required this.controller});
+
+  final TabController controller;
+
+  @override
+  State<_SegmentedTabBar> createState() => _SegmentedTabBarState();
+}
+
+class _SegmentedTabBarState extends State<_SegmentedTabBar> {
+  @override
+  void initState() {
+    super.initState();
+    // Escucha la animación en tiempo real para reflejar el swipe al instante.
+    widget.controller.animation?.addListener(_onAnimChanged);
+  }
+
+  @override
+  void dispose() {
+    widget.controller.animation?.removeListener(_onAnimChanged);
+    super.dispose();
+  }
+
+  void _onAnimChanged() => setState(() {});
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    // .round() hace que el segmento cambie en el punto medio del gesto.
+    final idx =
+        (widget.controller.animation?.value ?? widget.controller.index.toDouble())
+            .round();
+
+    // Material con clipBehavior recorta los hijos al borde redondeado,
+    // eliminando el gap entre el relleno del segmento y el contorno exterior.
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 10, 16, 2),
+      child: SizedBox(
+        height: 44,
+        child: Material(
+          clipBehavior: Clip.antiAlias,
+          color: Colors.transparent,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+            side: BorderSide(
+              color: theme.colorScheme.outline,
+              width: 1.5,
+            ),
+          ),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              _TabSegment(
+                icon: Icons.grid_view_rounded,
+                label: 'Todos',
+                selected: idx == 0,
+                onTap: () => widget.controller.animateTo(0),
+              ),
+              _TabSegment(
+                icon: Icons.star_rounded,
+                label: 'Favoritos',
+                selected: idx == 1,
+                onTap: () => widget.controller.animateTo(1),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _TabSegment extends StatelessWidget {
+  const _TabSegment({
+    required this.icon,
+    required this.label,
+    required this.selected,
+    required this.onTap,
+  });
+
+  final IconData icon;
+  final String label;
+  final bool selected;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
+    return Expanded(
+      child: InkWell(
+        onTap: onTap,
+        // Elimina el efecto gris/splash al tocar
+        splashColor: Colors.transparent,
+        highlightColor: Colors.transparent,
+        overlayColor: const WidgetStatePropertyAll(Colors.transparent),
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 200),
+          curve: Curves.easeInOut,
+          // Sin borderRadius: el clip del Material padre maneja las esquinas
+          decoration: BoxDecoration(
+            color: selected ? theme.colorScheme.primary : Colors.transparent,
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(
+                icon,
+                size: 16,
+                color: selected
+                    ? theme.colorScheme.onPrimary
+                    : theme.colorScheme.onSurfaceVariant,
+              ),
+              const SizedBox(width: 6),
+              Text(
+                label,
+                style: theme.textTheme.labelLarge?.copyWith(
+                  color: selected
+                      ? theme.colorScheme.onPrimary
+                      : theme.colorScheme.onSurfaceVariant,
+                  fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
+                ),
+              ),
+            ],
           ),
         ),
       ),
