@@ -6,7 +6,7 @@ plugins {
 }
 
 android {
-    namespace = "com.lotaoffline.lota_offline"
+    namespace = "com.jlmglobalsoftware.lotapue"
     compileSdk = flutter.compileSdkVersion
     ndkVersion = flutter.ndkVersion
 
@@ -21,7 +21,7 @@ android {
 
     defaultConfig {
         // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
-        applicationId = "com.lotaoffline.lota_offline"
+        applicationId = "com.jlmglobalsoftware.lotapue"
         // You can update the following values to match your application needs.
         // For more information, see: https://flutter.dev/to/review-gradle-config.
         minSdk = flutter.minSdkVersion

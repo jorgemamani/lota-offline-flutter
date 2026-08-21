@@ -1,4 +1,4 @@
-package com.lotaoffline.lota_offline
+package com.jlmglobalsoftware.lotapue
 
 import io.flutter.embedding.android.FlutterActivity
 
