@@ -12,6 +12,13 @@ analyzer:
   exclude:
     - "**/*.g.dart"
     - "**/*.freezed.dart"
+    - build/**
+    - android/**
+    - ios/**
+    - web/**
+    - windows/**
+    - macos/**
+    - linux/**
   errors:
     # withOpacity sigue funcionando en todas las versiones de Flutter 3.x
     deprecated_member_use: ignore
